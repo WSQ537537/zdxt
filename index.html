@@ -25,17 +25,16 @@ body {
 }
 @keyframes flow { 0% { transform: scale(1); } 100% { transform: scale(1.08) rotate(1deg); } }
 
-/* 顶部导航栏 - 独立分区，不参与页面模糊过渡 */
+/* 顶部导航栏 - 独立分区，与主体分隔 */
 .header {
     position: fixed; top: 0; left: 0; width: 100%;
     padding: 12px 48px;
     display: flex; justify-content: space-between; align-items: center;
-    background: rgba(6,11,24,0.95);
+    background: rgba(10, 14, 42, 0.98);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     z-index: 9999;
-    /* 独立渲染，不继承页面模糊 */
-    isolation: isolate;
 }
 
 /* ========== Logo艺术字 ========== */
@@ -168,10 +167,10 @@ body {
     }
 }
 
-/* 页面初始模糊可见，LOGO旋转时变清晰 */
+/* 页面初始状态：模糊但可见，不阻塞渲染 */
 .page-content {
-    filter: blur(10px);
-    opacity: 0.8;
+    filter: blur(8px);
+    opacity: 0.7;
     transition: filter 0.8s ease-out, opacity 0.6s ease-out;
 }
 .page-content.clear {
@@ -1582,22 +1581,13 @@ function initLogoAnimation() {
     const logoText = document.querySelector('.logo-text');
     const downloadBtn = document.querySelector('.download-btn');
     
-    // 预加载关键资源
-    const preloadResources = () => {
-        // 预加载图片
-        document.querySelectorAll('.card-img-wrap img').forEach(img => {
-            if (img.dataset.src) {
-                const preload = new Image();
-                preload.src = img.dataset.src;
-            }
-        });
-        // 预加载Logo
-        const logoPreload = new Image();
-        logoPreload.src = 'images/logo-source.jpg';
-    };
-    preloadResources();
+    // 预加载全站资源（雕刻阶段同步进行）
+    document.querySelectorAll('.card-img-wrap img').forEach(img => {
+        if (img.dataset.src) { new Image().src = img.dataset.src; }
+    });
+    new Image().src = 'images/logo-source.jpg';
     
-    // 加载并雕刻（页面初始模糊状态）
+    // 加载SVG并雕刻
     fetch('images/logo-vector.svg')
         .then(r => r.text())
         .then(svgText => {
@@ -1605,12 +1595,8 @@ function initLogoAnimation() {
             const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
             const paths = svgDoc.querySelectorAll('.engrave-path');
             
-            if (paths.length === 0) {
-                startFlyAnimation();
-                return;
-            }
+            if (paths.length === 0) { startFlyAnimation(); return; }
             
-            // 注入路径
             paths.forEach(p => {
                 const clone = svgEl.ownerDocument.importNode(p, true);
                 const len = clone.getTotalLength ? clone.getTotalLength() : 500;
@@ -1624,72 +1610,66 @@ function initLogoAnimation() {
                 clipGroup.appendChild(clone);
             });
             
-            // 开始雕刻
+            // 雕刻
             const pathElements = clipGroup.querySelectorAll('.engrave-path');
             const total = pathElements.length;
             const batchSize = Math.max(5, Math.ceil(total / 6));
-            let currentIdx = 0;
-            
+            let idx = 0;
             laserDot.style.opacity = '1';
             
-            function carveBatch() {
-                if (currentIdx >= total) {
+            (function carveBatch() {
+                if (idx >= total) {
                     laserDot.style.opacity = '0';
-                    setTimeout(startFlyAnimation, 80);
+                    setTimeout(startFlyAnimation, 50);
                     return;
                 }
-                
-                const batch = Array.from(pathElements).slice(currentIdx, currentIdx + batchSize);
-                batch.forEach((path, i) => {
+                Array.from(pathElements).slice(idx, idx + batchSize).forEach((p, i) => {
                     setTimeout(() => {
-                        path.style.opacity = '1';
-                        path.classList.add('carved');
+                        p.style.opacity = '1';
+                        p.classList.add('carved');
                         try {
-                            const bbox = path.getBBox();
-                            laserDot.setAttribute('cx', bbox.x + bbox.width / 2);
-                            laserDot.setAttribute('cy', bbox.y + bbox.height / 2);
+                            const b = p.getBBox();
+                            laserDot.setAttribute('cx', b.x + b.width/2);
+                            laserDot.setAttribute('cy', b.y + b.height/2);
                         } catch(e) {}
                     }, i * 6);
                 });
-                
-                currentIdx += batchSize;
+                idx += batchSize;
                 setTimeout(carveBatch, 30);
-            }
-            
-            carveBatch();
+            })();
         })
         .catch(() => startFlyAnimation());
     
-    // 飞入动画：LOGO旋转缩小，页面同步变清晰
     function startFlyAnimation() {
-        // LOGO开始旋转缩小时，页面由模糊逐步清晰
+        // ★ 关键：LOGO开始缩小 = 页面开始变清晰（同步）
         pageContent.classList.add('clear');
         logoCanvas.classList.add('flying');
         
-        // 0.6s：矢量渐隐，常态图标显示（交叉过渡，不消失）
+        // 飞入动画进行到约60%时（~0.9s），矢量到位
+        // 此时矢量渐隐、常态图标渐显（交叉过渡，不消失重生）
         setTimeout(() => {
-            logoCanvas.style.transition = 'opacity 0.5s ease';
+            logoCanvas.style.transition = 'opacity 0.4s ease';
             logoCanvas.style.opacity = '0';
             headerLogoImg.classList.add('show');
-        }, 600);
+        }, 900);
         
-        // 0.8s：LOGO固定，文字显示并跃动
+        // LOGO定格瞬间：文字出现并跃动
         setTimeout(() => {
             logoText.classList.add('show');
             logoText.classList.add('bounce');
-        }, 800);
-        
-        // 1.0s：下载按钮上浮
-        setTimeout(() => {
-            downloadBtn.classList.add('show');
         }, 1000);
         
-        // 1.3s：开屏层淡出
+        // 右上角下载按钮同步上浮
         setTimeout(() => {
-            logoIntro.style.transition = 'opacity 0.5s ease';
+            downloadBtn.classList.add('show');
+        }, 1100);
+        
+        // 开屏背景淡出
+        setTimeout(() => {
+            logoIntro.style.transition = 'opacity 0.4s ease';
             logoIntro.style.opacity = '0';
-            setTimeout(() => logoIntro.style.display = 'none', 500);
-        }, 1300);
+            setTimeout(() => logoIntro.style.display = 'none', 400);
+        }, 1400);
     }
 }
 
