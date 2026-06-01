@@ -248,6 +248,9 @@ body {
     transition: all 0.3s;
 }
 .download-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(59,130,246,0.45); }
+.download-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+.download-btn .btn-loading { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
 .section { min-height: 100vh; padding: 120px 24px 60px; max-width: 1400px; margin: 0 auto; }
 .heading {
@@ -655,7 +658,10 @@ body {
             <span class="logo-char">途</span>
         </div>
     </div>
-    <a href="zdxt.apk" class="download-btn">📥 立即下载</a>
+    <button class="download-btn" id="downloadBtn" onclick="startDownload()">
+        <span class="btn-text">📥 立即下载</span>
+        <span class="btn-loading" style="display:none;">⚡ 智能加速中...</span>
+    </button>
 </div>
 <div class="scroll-hint" id="scrollHint">往下滑了解更多</div>
 
@@ -1339,6 +1345,155 @@ document.addEventListener('DOMContentLoaded', () => {
     // Logo动画完成后显示header中的logo
     initLogoAnimation();
 });
+
+// ========== 智能加速下载功能 ==========
+const DOWNLOAD_CONFIG = {
+    // 下载源配置（按优先级排序）
+    sources: [
+        {
+            name: '本地下载',
+            url: 'zdxt.apk',
+            type: 'local',
+            priority: 1
+        },
+        {
+            name: 'GitHub官方',
+            url: 'https://github.com/WSQ537537/zdxt/releases/download/v1.0/zdxt.apk',
+            type: 'github',
+            priority: 2
+        },
+        {
+            name: 'ghproxy加速',
+            url: 'https://ghproxy.com/https://github.com/WSQ537537/zdxt/releases/download/v1.0/zdxt.apk',
+            type: 'proxy',
+            priority: 3
+        },
+        {
+            name: 'mirror.ghproxy加速',
+            url: 'https://mirror.ghproxy.com/https://github.com/WSQ537537/zdxt/releases/download/v1.0/zdxt.apk',
+            type: 'proxy',
+            priority: 4
+        }
+    ],
+    // 超时时间（毫秒）
+    timeout: 3000,
+    // 测试文件大小（字节）
+    testSize: 1024
+};
+
+// 测试下载源速度
+async function testDownloadSpeed(source) {
+    return new Promise((resolve) => {
+        const startTime = performance.now();
+        const xhr = new XMLHttpRequest();
+        
+        xhr.open('HEAD', source.url, true);
+        xhr.timeout = DOWNLOAD_CONFIG.timeout;
+        
+        xhr.onload = function() {
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            if (xhr.status >= 200 && xhr.status < 400) {
+                resolve({
+                    source: source,
+                    speed: duration,
+                    available: true
+                });
+            } else {
+                resolve({
+                    source: source,
+                    speed: Infinity,
+                    available: false
+                });
+            }
+        };
+        
+        xhr.onerror = () => resolve({ source: source, speed: Infinity, available: false });
+        xhr.ontimeout = () => resolve({ source: source, speed: Infinity, available: false });
+        
+        xhr.send();
+    });
+}
+
+// 选择最优下载源
+async function selectBestSource() {
+    // 首先检查本地文件
+    const localSource = DOWNLOAD_CONFIG.sources.find(s => s.type === 'local');
+    if (localSource) {
+        try {
+            const response = await fetch(localSource.url, { method: 'HEAD', mode: 'no-cors' });
+            return localSource;
+        } catch (e) {
+            // 本地文件不存在，继续测试其他源
+        }
+    }
+    
+    // 测试所有远程源
+    const remoteSources = DOWNLOAD_CONFIG.sources.filter(s => s.type !== 'local');
+    const testResults = await Promise.all(
+        remoteSources.map(source => testDownloadSpeed(source))
+    );
+    
+    // 筛选可用源并按速度排序
+    const availableSources = testResults
+        .filter(result => result.available)
+        .sort((a, b) => a.speed - b.speed);
+    
+    if (availableSources.length === 0) {
+        // 如果没有可用源，返回GitHub官方源作为 fallback
+        return DOWNLOAD_CONFIG.sources.find(s => s.type === 'github');
+    }
+    
+    return availableSources[0].source;
+}
+
+// 开始下载
+async function startDownload() {
+    const btn = document.getElementById('downloadBtn');
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    
+    // 显示加载状态
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline';
+    
+    try {
+        // 选择最优下载源
+        const bestSource = await selectBestSource();
+        
+        // 延迟一点让用户看到"加速中"状态
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // 创建下载链接
+        const link = document.createElement('a');
+        link.href = bestSource.url;
+        link.download = 'zdxt.apk';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        // 触发下载
+        link.click();
+        document.body.removeChild(link);
+        
+        // 显示成功提示
+        btnText.textContent = `✅ 正在下载 (${bestSource.name})`;
+        
+    } catch (error) {
+        console.error('下载失败:', error);
+        btnText.textContent = '❌ 下载失败，请重试';
+        
+        // 3秒后恢复
+        setTimeout(() => {
+            btnText.textContent = '📥 立即下载';
+        }, 3000);
+    } finally {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    }
+}
 
 // ========== Logo激光雕刻动画（使用原始Logo图） ==========
 function initLogoAnimation() {
