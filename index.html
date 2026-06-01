@@ -82,83 +82,96 @@ body {
     }
 }
 
-/* ========== Logo入场动画 - 简化版 ========== */
+/* ========== Logo入场动画 - SVG矢量激光雕刻 ========== */
 .logo-intro {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     display: flex; align-items: center; justify-content: center;
     z-index: 100000; background: #060b18;
 }
-.logo-center-stage {
-    position: relative;
-    width: 300px;
+.logo-canvas-container { 
+    position: relative; 
+    width: 300px; 
     height: 300px;
-    border-radius: 30px;
+}
+.logo-carving-stage { 
+    position: relative; 
+    width: 100%; 
+    height: 100%; 
+    border-radius: 30px; 
     overflow: hidden;
 }
-.logo-center-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.logo-engrave-svg { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+}
+.logo-engrave-svg .engrave-path { 
+    stroke-dasharray: var(--len); 
+    stroke-dashoffset: var(--len);
+    transition: stroke-dashoffset 0.3s ease, opacity 0.3s ease;
+}
+.logo-engrave-svg .engrave-path.carved { 
+    opacity: 1 !important; 
+    stroke-dashoffset: 0 !important;
+}
+.laser-dot { filter: drop-shadow(0 0 12px #00ffff) drop-shadow(0 0 24px #00ffff); }
+.spark { fill: #00ffff; filter: drop-shadow(0 0 4px #00ffff); }
+
+/* 雕刻完成后的Logo - 用于飞入动画 */
+.logo-final { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    opacity: 0; 
+    border-radius: 30px; 
+    overflow: hidden;
+}
+.logo-final-img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
     border-radius: 30px;
-    opacity: 0;
-    filter: brightness(0.3) contrast(1.2);
-    transition: all 1.5s ease;
 }
-.logo-center-img.revealed {
-    opacity: 1;
-    filter: brightness(1) contrast(1);
+.logo-final.show { 
+    opacity: 1; 
+    animation: logoFlyToHeader 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; 
+    animation-delay: 0.1s; 
 }
 
-/* 激光扫描线 */
-.laser-scan-line {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, transparent, #00ffff, transparent);
-    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
-    opacity: 0;
-}
-.laser-scan-line.scanning {
-    animation: laserScan 1.5s ease-in-out;
-}
-@keyframes laserScan {
-    0% { top: 0; opacity: 1; }
-    100% { top: 100%; opacity: 1; }
-}
-
-/* Logo飞入动画类 */
-.logo-flying {
-    position: fixed !important;
-    z-index: 100001;
-    animation: logoFlyToHeader 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-}
-
-/* Logo从中心飞到左上角文字左侧的动画 */
+/* Logo从中心飞到左上角文字左侧的动画 - 放慢旋转，摆正正面 */
 @keyframes logoFlyToHeader {
     0% { 
-        width: 300px;
-        height: 300px;
+        transform: scale(1) rotateY(0deg);
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+        margin-left: -150px;
+        margin-top: -150px;
+        width: 300px;
+        height: 300px;
     }
     30% {
-        transform: translate(-50%, -50%) scale(0.7) rotateY(180deg);
+        transform: scale(0.6) rotateY(180deg);
     }
     60% {
-        transform: translate(-30%, -30%) scale(0.4) rotateY(360deg);
+        transform: scale(0.3) rotateY(360deg);
+        top: 30%;
+        left: 30%;
     }
     85% {
-        transform: translate(-10%, -10%) scale(0.2) rotateY(540deg);
+        transform: scale(0.15) rotateY(540deg);
     }
     100% { 
-        width: 40px;
-        height: 40px;
+        transform: scale(0.133) rotateY(720deg);
         top: 12px;
         left: 48px;
-        transform: translate(0, 0) scale(1) rotateY(720deg);
+        margin-left: 0;
+        margin-top: 0;
+        width: 40px;
+        height: 40px;
     }
 }
 
@@ -300,84 +313,7 @@ body {
     .download-banner-btn { padding: 12px 24px; font-size: 15px; }
 }
 
-/* ========== 底部浮动下载按钮 ========== */
-.float-download-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(6, 11, 24, 0.95);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 12px 24px;
-    z-index: 9998;
-    transform: translateY(100%);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.float-download-bar.show {
-    transform: translateY(0);
-}
-.float-download-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-}
-.float-download-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.float-download-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    object-fit: cover;
-}
-.float-download-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-.float-download-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #fff;
-}
-.float-download-desc {
-    font-size: 13px;
-    color: #94a3b8;
-}
-.float-download-btn {
-    padding: 12px 28px;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    white-space: nowrap;
-}
-.float-download-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
-}
-.float-download-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-}
-@media (max-width: 640px) {
-    .float-download-bar { padding: 10px 16px; }
-    .float-download-icon { width: 40px; height: 40px; }
-    .float-download-title { font-size: 15px; }
-    .float-download-desc { display: none; }
-    .float-download-btn { padding: 10px 20px; font-size: 14px; }
-}
+
 
 .section { min-height: 100vh; padding: 120px 24px 60px; max-width: 1400px; margin: 0 auto; }
 .heading {
@@ -764,12 +700,33 @@ body {
 <!-- 页面内容容器 -->
 <div class="page-content" id="pageContent">
 
-<!-- Logo入场动画 - 简化版 -->
+<!-- Logo入场动画 - SVG矢量激光雕刻 -->
 <div class="logo-intro" id="logoIntro">
-    <div class="logo-center-stage" id="logoCenterStage">
-        <img src="images/logo-source.jpg" alt="智答星途" class="logo-center-img" id="logoCenterImg">
-        <!-- 激光扫描线效果 -->
-        <div class="laser-scan-line" id="laserScanLine"></div>
+    <div class="logo-canvas-container" id="logoCanvasContainer">
+        <div class="logo-carving-stage" id="logoCarvingStage">
+            <svg class="logo-engrave-svg" viewBox="0 0 1280 1280" id="logoSvg" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <filter id="laserGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="6" result="blur"/>
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                    <clipPath id="roundClip">
+                        <rect x="60" y="60" width="1160" height="1160" rx="60" ry="60"/>
+                    </clipPath>
+                </defs>
+                <g clip-path="url(#roundClip)">
+                    <rect x="0" y="0" width="1280" height="1280" fill="#0a0e2a" rx="60"/>
+                    <!-- 矢量路径将由JS动态注入 -->
+                </g>
+                <!-- 激光点 -->
+                <circle class="laser-dot" cx="640" cy="640" r="8" fill="#00ffff" filter="url(#laserGlow)" opacity="0"/>
+                <!-- 火花 -->
+                <g class="sparks"></g>
+            </svg>
+        </div>
+        <div class="logo-final" id="logoFinal">
+            <img src="images/logo-source.jpg" alt="智答星途" class="logo-final-img">
+        </div>
     </div>
 </div>
 
@@ -1473,47 +1430,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Logo矢量激光雕刻动画
     initLogoAnimation();
-    
-    // 底部浮动下载按钮滚动监听
-    initFloatDownloadBar();
 });
-
-// ========== 底部浮动下载按钮 ==========
-function initFloatDownloadBar() {
-    const floatBar = document.getElementById('floatDownloadBar');
-    if (!floatBar) return;
-    
-    // 滚动到底部时显示
-    function checkScroll() {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight;
-        const clientHeight = window.innerHeight;
-        
-        // 距离底部100px时显示
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
-        
-        if (isNearBottom) {
-            floatBar.classList.add('show');
-        } else {
-            floatBar.classList.remove('show');
-        }
-    }
-    
-    // 节流处理滚动事件
-    let ticking = false;
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                checkScroll();
-                ticking = false;
-            });
-            ticking = true;
-        }
-    }, { passive: true });
-    
-    // 初始检查
-    checkScroll();
-}
 
 // ========== 智能加速下载功能 ==========
 const DOWNLOAD_CONFIG = {
@@ -1664,74 +1581,130 @@ async function startDownload() {
     }
 }
 
-// ========== Logo开屏动画 - 简化版 ==========
+// ========== Logo矢量激光雕刻动画 ==========
 function initLogoAnimation() {
     const logoIntro = document.getElementById('logoIntro');
-    const logoCenterStage = document.getElementById('logoCenterStage');
-    const logoCenterImg = document.getElementById('logoCenterImg');
-    const laserScanLine = document.getElementById('laserScanLine');
+    const logoFinal = document.getElementById('logoFinal');
     const headerLogoImg = document.getElementById('headerLogoImg');
+    const svgEl = document.getElementById('logoSvg');
+    const laserDot = svgEl.querySelector('.laser-dot');
+    const clipGroup = svgEl.querySelector('g[clip-path="url(#roundClip)"]');
     const pageContent = document.getElementById('pageContent');
     const logoText = document.querySelector('.logo-text');
     const downloadBtn = document.querySelector('.download-btn');
     
-    // 预加载Logo图片
-    const preloadImg = new Image();
-    preloadImg.src = 'images/logo-source.jpg';
-    preloadImg.onload = function() {
-        startAnimation();
-    };
-    preloadImg.onerror = function() {
-        // 图片加载失败，直接显示页面
-        skipAnimation();
-    };
+    // 加载矢量SVG路径
+    fetch('images/logo-vector.svg')
+        .then(r => r.text())
+        .then(svgText => {
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+            const paths = svgDoc.querySelectorAll('.engrave-path');
+            
+            if (paths.length === 0) {
+                finishAnimation();
+                return;
+            }
+            
+            // 将路径注入到SVG中
+            paths.forEach(p => {
+                const clone = svgEl.ownerDocument.importNode(p, true);
+                const len = clone.getTotalLength ? clone.getTotalLength() : 500;
+                clone.style.setProperty('--len', len);
+                clone.style.stroke = clone.getAttribute('fill') || '#ffffff';
+                clone.style.strokeWidth = '2';
+                clone.style.strokeLinecap = 'round';
+                clone.style.strokeLinejoin = 'round';
+                clone.style.fill = 'none';
+                clone.style.opacity = '0';
+                clipGroup.appendChild(clone);
+            });
+            
+            startCarving(clipGroup.querySelectorAll('.engrave-path'));
+        })
+        .catch(() => finishAnimation());
     
-    function startAnimation() {
-        // 阶段1: 激光扫描线效果 (0-1.5s)
-        setTimeout(() => {
-            laserScanLine.classList.add('scanning');
-        }, 100);
+    function startCarving(pathElements) {
+        const total = pathElements.length;
+        const batchSize = Math.max(3, Math.ceil(total / 15));
+        let currentIdx = 0;
         
-        // 阶段2: Logo逐渐显现 (0.5-2s)
-        setTimeout(() => {
-            logoCenterImg.classList.add('revealed');
-        }, 500);
+        laserDot.style.opacity = '1';
         
-        // 阶段3: Logo开始飞入动画 (2s)
-        setTimeout(() => {
-            logoCenterStage.classList.add('logo-flying');
-        }, 2000);
+        function carveBatch() {
+            if (currentIdx >= total) {
+                laserDot.style.opacity = '0';
+                setTimeout(finishAnimation, 200);
+                return;
+            }
+            
+            const batch = Array.from(pathElements).slice(currentIdx, currentIdx + batchSize);
+            
+            batch.forEach((path, i) => {
+                setTimeout(() => {
+                    path.style.opacity = '1';
+                    path.classList.add('carved');
+                    
+                    try {
+                        const bbox = path.getBBox();
+                        const cx = bbox.x + bbox.width / 2;
+                        const cy = bbox.y + bbox.height / 2;
+                        laserDot.setAttribute('cx', cx);
+                        laserDot.setAttribute('cy', cy);
+                        if (Math.random() > 0.6) createSpark(cx, cy);
+                    } catch(e) {}
+                }, i * 25);
+            });
+            
+            currentIdx += batchSize;
+            setTimeout(carveBatch, 70);
+        }
         
-        // 阶段4: 页面变清晰 (2.5s)
+        carveBatch();
+    }
+    
+    function createSpark(x, y) {
+        const sparksGroup = svgEl.querySelector('.sparks');
+        const spark = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        spark.setAttribute('cx', x + (Math.random() - 0.5) * 50);
+        spark.setAttribute('cy', y + (Math.random() - 0.5) * 50);
+        spark.setAttribute('r', Math.random() * 3 + 1);
+        spark.setAttribute('class', 'spark');
+        spark.style.opacity = '1';
+        sparksGroup.appendChild(spark);
+        setTimeout(() => {
+            spark.style.transition = 'opacity 0.15s';
+            spark.style.opacity = '0';
+            setTimeout(() => spark.remove(), 150);
+        }, 60);
+    }
+    
+    function finishAnimation() {
+        logoFinal.classList.add('show');
+        
+        // 1.2s后：页面变清晰
         setTimeout(() => {
             pageContent.classList.add('clear');
-        }, 2500);
+        }, 1200);
         
-        // 阶段5: Header Logo显示，文字跃动 (2.8s)
+        // 1.4s后：header logo显示，文字跃动
         setTimeout(() => {
             headerLogoImg.classList.add('show');
             logoText.classList.add('bounce');
-        }, 2800);
+        }, 1400);
         
-        // 阶段6: 下载按钮上浮 (3s)
+        // 1.6s后：下载按钮上浮
         setTimeout(() => {
             downloadBtn.classList.add('show');
-        }, 3000);
+        }, 1600);
         
-        // 阶段7: 开屏动画淡出 (3.5s)
+        // 1.8s后：开屏淡出
         setTimeout(() => {
             logoIntro.classList.add('fade-out');
-            setTimeout(() => {
-                logoIntro.style.display = 'none';
+            setTimeout(() => { 
+                logoIntro.style.display = 'none'; 
             }, 600);
-        }, 3500);
-    }
-    
-    function skipAnimation() {
-        logoIntro.style.display = 'none';
-        pageContent.classList.add('clear');
-        headerLogoImg.classList.add('show');
-        downloadBtn.classList.add('show');
+        }, 1800);
     }
 }
 
@@ -1891,23 +1864,6 @@ document.addEventListener('mousemove', e => {
 </div>
 
 </div><!-- /page-content -->
-
-<!-- 底部浮动下载按钮 -->
-<div class="float-download-bar" id="floatDownloadBar">
-    <div class="float-download-content">
-        <div class="float-download-info">
-            <img src="images/logo-source.jpg" alt="智答星途" class="float-download-icon">
-            <div class="float-download-text">
-                <span class="float-download-title">智答星途</span>
-                <span class="float-download-desc">一体化智慧教育平台</span>
-            </div>
-        </div>
-        <button class="float-download-btn" onclick="startDownload()">
-            <span class="btn-text">📥 立即下载</span>
-            <span class="btn-loading" style="display:none;">⚡ 加速中...</span>
-        </button>
-    </div>
-</div>
 
 </body>
 </html>
