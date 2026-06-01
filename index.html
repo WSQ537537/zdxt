@@ -123,7 +123,7 @@ body {
 .laser-dot { filter: drop-shadow(0 0 12px #00ffff) drop-shadow(0 0 24px #00ffff); }
 .spark { fill: #00ffff; filter: drop-shadow(0 0 4px #00ffff); }
 
-/* Logo从中心飞到左上角文字左侧的动画 */
+/* Logo从中心飞到左上角文字左侧的动画 - 平滑过渡到常态图标 */
 @keyframes logoFlyToHeader {
     0% { 
         transform: scale(1) rotateY(0deg);
@@ -133,12 +133,25 @@ body {
         margin-top: -150px;
         width: 300px;
         height: 300px;
+        opacity: 1;
     }
     30% {
         transform: scale(0.6) rotateY(180deg);
+        opacity: 1;
     }
     60% {
         transform: scale(0.3) rotateY(360deg);
+        opacity: 1;
+    }
+    80% {
+        transform: scale(0.15) rotateY(360deg);
+        top: 12px;
+        left: 52px;
+        margin-left: 0;
+        margin-top: 0;
+        width: 36px;
+        height: 36px;
+        opacity: 0.8; /* 开始淡出，与常态图标交叉 */
     }
     100% { 
         transform: scale(0.12) rotateY(360deg);
@@ -148,7 +161,7 @@ body {
         margin-top: 0;
         width: 36px;
         height: 36px;
-        opacity: 0; /* 到位后隐藏 */
+        opacity: 0; /* 完全淡出 */
     }
 }
 
@@ -227,7 +240,7 @@ body {
     border-radius: 20px;
     padding: 20px 32px;
     margin: 40px auto 0;
-    max-width: 1400px;
+    max-width: 1200px;
 }
 .download-banner-content {
     display: flex;
@@ -1655,22 +1668,20 @@ function initLogoAnimation() {
     }
     
     function startFlyAnimation() {
+        // 立刻开始显示页面（杜绝黑屏）
+        pageContent.classList.add('clear');
+        
         // 开始飞入动画
         logoCanvas.classList.add('flying');
         
-        // 0.3s后：页面开始变清晰（加快显影）
-        setTimeout(() => {
-            pageContent.classList.add('clear');
-        }, 300);
-        
-        // 1.2s后：header logo显示，文字显示
+        // 1.0s后：header logo显示（飞入动画中后期，平滑过渡）
         setTimeout(() => {
             headerLogoImg.classList.add('show');
-            logoText.classList.add('show');
-        }, 1200);
+        }, 1000);
         
-        // 1.5s后：文字开始跃动
+        // 1.5s后：Logo定格，文字显示并跃动
         setTimeout(() => {
+            logoText.classList.add('show');
             logoText.classList.add('bounce');
         }, 1500);
         
@@ -1679,13 +1690,13 @@ function initLogoAnimation() {
             downloadBtn.classList.add('show');
         }, 1800);
         
-        // 2.2s后：开屏淡出
+        // 2.0s后：开屏淡出
         setTimeout(() => {
             logoIntro.classList.add('fade-out');
             setTimeout(() => { 
                 logoIntro.style.display = 'none'; 
-            }, 500);
-        }, 2200);
+            }, 400);
+        }, 2000);
     }
     
     function finishAnimation() {
