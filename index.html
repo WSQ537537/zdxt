@@ -50,7 +50,7 @@ body {
 }
 .download-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(59,130,246,0.45); }
 
-.section { min-height: 100vh; padding: 120px 48px 60px; max-width: 1600px; margin: 0 auto; }
+.section { min-height: 100vh; padding: 120px 24px 60px; max-width: 1400px; margin: 0 auto; }
 .heading {
     font-size: 44px; font-weight: 900;
     background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899);
@@ -76,20 +76,23 @@ body {
 /* 模块排布规则：单行排布完1-2个模块后，剩余空间够容纳单张卡片则接续下个模块 */
 .module-row {
     display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 16px;
+    margin-bottom: 16px;
     align-items: flex-start;
-    flex-wrap: wrap; /* 允许换行 */
+    flex-wrap: nowrap; /* 默认单行 */
+    width: 100%;
 }
 .module-row .module-item {
-    flex: 1 1 auto; /* 自动伸缩填充空间 */
-    min-width: 280px;
+    flex: 1 1 0; /* 等分空间 */
+    min-width: 0; /* 允许收缩 */
     max-width: 100%;
 }
-/* 单卡片模块自动填满空位 */
-.module-row .module-item:only-child,
-.module-row .module-item:first-child:nth-last-child(1) {
-    flex: 1 1 100%;
+/* 多模块时自动调整 */
+.module-row:has(.module-item:nth-child(2)) .module-item {
+    flex: 1 1 calc(50% - 8px);
+}
+.module-row:has(.module-item:nth-child(3)) .module-item {
+    flex: 1 1 calc(33.333% - 11px);
 }
 
 /* 模块头部 */
@@ -197,15 +200,35 @@ body {
     box-shadow: 0 12px 32px rgba(59,130,246,0.15);
 }
 
-/* 图片容器 - 放大至适中尺寸 */
+/* 图片容器 - 放大至适中尺寸，图片居中显示 */
 .card-img-wrap {
     width: 100%; height: 240px;
     border-radius: 12px; overflow: hidden;
     position: relative; flex-shrink: 0;
     margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.15);
 }
-.card-img-wrap img { width: 100%; display: block; transition: transform 0.4s ease; }
-.card-img-wrap.short-img img { height: 100%; object-fit: contain; background: rgba(0,0,0,0.2); }
+.card-img-wrap img { 
+    max-width: 100%; 
+    max-height: 100%; 
+    object-fit: contain;
+    display: block; 
+    transition: transform 0.4s ease, opacity 0.3s ease; 
+    opacity: 0;
+}
+.card-img-wrap img.loaded {
+    opacity: 1;
+}
+.card-img-wrap.short-img img { 
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; 
+}
 .card-img-wrap.long-img::after {
     content: ''; position: absolute; bottom: 0; left: 0; right: 0;
     height: 80px;
@@ -266,8 +289,8 @@ body {
 @media (max-width:1200px) {
     .module-row { flex-wrap: wrap; }
     .module-row .module-item { 
-        flex: 1 1 calc(50% - 10px); 
-        max-width: calc(50% - 10px);
+        flex: 1 1 calc(50% - 8px) !important; 
+        max-width: calc(50% - 8px);
         min-width: 280px;
     }
 }
@@ -277,9 +300,12 @@ body {
     .header { padding: 14px 20px; }
     .section { padding: 110px 16px 40px; }
     .card-large { padding: 20px; border-radius: 16px; }
-    .module-row { flex-direction: column; }
+    .module-row { 
+        flex-direction: column; 
+        flex-wrap: wrap;
+    }
     .module-row .module-item { 
-        flex: 1 1 100%; 
+        flex: 1 1 100% !important; 
         max-width: 100%;
         width: 100%;
     }
@@ -976,16 +1002,17 @@ function initModule(moduleId) {
     function measure() {
         const cw = container.offsetWidth;
         const totalW = cards.length * CARD_W + (cards.length - 1) * GAP;
-        const maxSteps = Math.max(0, Math.ceil((totalW - cw) / STEP));
-        return { cw, totalW, maxSteps, needsNav: totalW > cw };
+        // 计算最大滑动步数，确保整卡对齐
+        const visibleCards = Math.floor((cw + GAP) / STEP);
+        const maxSteps = Math.max(0, cards.length - visibleCards);
+        return { cw, totalW, maxSteps, needsNav: totalW > cw, visibleCards };
     }
     
     function update() {
-        const { cw, totalW, maxSteps, needsNav } = measure();
+        const { cw, totalW, maxSteps, needsNav, visibleCards } = measure();
         
-        // 移动轨道 - 限制最大位移防止跑出容器
-        const maxTranslate = Math.max(0, totalW - cw);
-        const currentTranslate = Math.min(state.index * STEP, maxTranslate);
+        // 移动轨道 - 整卡位移对齐
+        const currentTranslate = state.index * STEP;
         track.style.transform = `translateX(${-currentTranslate}px)`;
         
         if (!needsNav) {
@@ -1002,8 +1029,8 @@ function initModule(moduleId) {
         prevBtn.classList.toggle('show', state.index > 0);
         fadeLeft.classList.toggle('show', state.index > 0);
         
-        // 右渐变：滑到末尾时隐藏
-        const atEnd = state.index >= maxSteps || currentTranslate >= maxTranslate;
+        // 右渐变：滑到末尾时隐藏（末卡完整露出）
+        const atEnd = state.index >= maxSteps;
         nextBtn.classList.toggle('show', !atEnd);
         fadeRight.classList.toggle('show', !atEnd);
     }
@@ -1031,7 +1058,76 @@ function initModule(moduleId) {
 // 初始化所有模块
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-module]').forEach(m => initModule(m.dataset.module));
+    
+    // 图片懒加载和加载优化
+    initImageLoading();
 });
+
+// ========== 图片加载优化 ==========
+function initImageLoading() {
+    const images = document.querySelectorAll('.card-img-wrap img');
+    
+    // 使用 IntersectionObserver 实现懒加载
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                loadImage(img);
+                observer.unobserve(img);
+            }
+        });
+    }, {
+        rootMargin: '50px 0px',
+        threshold: 0.01
+    });
+    
+    images.forEach(img => {
+        // 设置 decoding="async" 优化解码性能
+        img.decoding = 'async';
+        img.loading = 'lazy';
+        
+        // 如果图片已经在视口内，直接加载
+        if (isInViewport(img)) {
+            loadImage(img);
+        } else {
+            imageObserver.observe(img);
+        }
+    });
+}
+
+function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+
+function loadImage(img) {
+    // 如果图片已经加载完成
+    if (img.complete && img.naturalWidth > 0) {
+        img.classList.add('loaded');
+        return;
+    }
+    
+    // 监听加载完成事件
+    img.onload = function() {
+        img.classList.add('loaded');
+    };
+    
+    img.onerror = function() {
+        // 加载失败时显示占位
+        img.style.opacity = '0.5';
+        img.classList.add('loaded');
+    };
+    
+    // 强制重新加载以确保触发 onload
+    const src = img.src;
+    img.src = '';
+    img.src = src;
+}
 
 // ========== 滚动引导蒙版 ==========
 const scrollHint = document.getElementById('scrollHint');
