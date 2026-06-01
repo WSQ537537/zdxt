@@ -169,9 +169,9 @@ body {
 
 /* 页面初始状态：模糊但可见，不阻塞渲染 */
 .page-content {
-    filter: blur(8px);
-    opacity: 0.7;
-    transition: filter 0.8s ease-out, opacity 0.6s ease-out;
+    filter: blur(6px);
+    opacity: 0.85;
+    transition: filter 0.6s ease-out, opacity 0.5s ease-out;
 }
 .page-content.clear {
     filter: blur(0);
@@ -1579,7 +1579,7 @@ function initLogoAnimation() {
     const clipGroup = svgEl.querySelector('g[clip-path="url(#roundClip)"]');
     const pageContent = document.getElementById('pageContent');
     const logoText = document.querySelector('.logo-text');
-    const downloadBtn = document.getElementById('download-btn');
+    const downloadBtn = document.getElementById('downloadBtn');
     
     // 预加载全站资源（雕刻阶段同步进行）
     document.querySelectorAll('.card-img-wrap img').forEach(img => {
