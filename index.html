@@ -35,6 +35,12 @@ body {
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(255,255,255,0.1);
     z-index: 9999;
+    /* 初始隐藏，LOGO到位后显示 */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+.header.show {
+    opacity: 1;
 }
 
 /* ========== Logo艺术字 ========== */
@@ -167,11 +173,11 @@ body {
     }
 }
 
-/* 页面初始状态：模糊但可见，不阻塞渲染 */
+/* 页面初始完全不可见，LOGO缩小时同步渐显 */
 .page-content {
-    filter: blur(6px);
-    opacity: 0.85;
-    transition: filter 0.6s ease-out, opacity 0.5s ease-out;
+    filter: blur(10px);
+    opacity: 0;
+    transition: filter 1s ease-out, opacity 0.8s ease-out;
 }
 .page-content.clear {
     filter: blur(0);
@@ -1641,37 +1647,36 @@ function initLogoAnimation() {
         .catch(() => startFlyAnimation());
     
     // 飞入动画：LOGO开始缩小 = 页面同步渐显
-    // 渐显全程隐藏文字与下载按钮，LOGO到位后才触发
+    // 渐显全程隐藏header，LOGO到位后才触发
     function startFlyAnimation() {
         // LOGO开始缩小，页面同步由模糊渐显
         pageContent.classList.add('clear');
         logoCanvas.classList.add('flying');
         
         // 飞入动画1.5s结束 = LOGO到位
-        // 此时才触发：矢量→常态图标过渡
+        // 此时：矢量渐隐，常态图标显示
         setTimeout(() => {
             logoCanvas.style.transition = 'opacity 0.3s ease';
             logoCanvas.style.opacity = '0';
-            headerLogoImg.classList.add('show');
         }, 1500);
         
-        // LOGO固定后：文字出现并跃动
+        // LOGO固定后：header整体显示（含图标、文字、按钮）
         setTimeout(() => {
+            const header = document.querySelector('.header');
+            header.classList.add('show');
+            // 文字跃动
             logoText.classList.add('show');
             logoText.classList.add('bounce');
-        }, 1600);
-        
-        // LOGO固定后：下载按钮上浮
-        setTimeout(() => {
+            // 按钮上浮
             downloadBtn.classList.add('show');
-        }, 1700);
+        }, 1600);
         
         // 开屏背景淡出
         setTimeout(() => {
             logoIntro.style.transition = 'opacity 0.4s ease';
             logoIntro.style.opacity = '0';
             setTimeout(() => logoIntro.style.display = 'none', 400);
-        }, 2000);
+        }, 2200);
     }
 }
 
