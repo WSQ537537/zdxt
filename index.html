@@ -1579,7 +1579,7 @@ function initLogoAnimation() {
     const clipGroup = svgEl.querySelector('g[clip-path="url(#roundClip)"]');
     const pageContent = document.getElementById('pageContent');
     const logoText = document.querySelector('.logo-text');
-    const downloadBtn = document.querySelector('.download-btn');
+    const downloadBtn = document.getElementById('download-btn');
     
     // 预加载全站资源（雕刻阶段同步进行）
     document.querySelectorAll('.card-img-wrap img').forEach(img => {
@@ -1610,17 +1610,17 @@ function initLogoAnimation() {
                 clipGroup.appendChild(clone);
             });
             
-            // 雕刻
+            // 雕刻（放慢速度）
             const pathElements = clipGroup.querySelectorAll('.engrave-path');
             const total = pathElements.length;
-            const batchSize = Math.max(5, Math.ceil(total / 6));
+            const batchSize = Math.max(3, Math.ceil(total / 10));
             let idx = 0;
             laserDot.style.opacity = '1';
             
             (function carveBatch() {
                 if (idx >= total) {
                     laserDot.style.opacity = '0';
-                    setTimeout(startFlyAnimation, 50);
+                    setTimeout(startFlyAnimation, 100);
                     return;
                 }
                 Array.from(pathElements).slice(idx, idx + batchSize).forEach((p, i) => {
@@ -1632,44 +1632,46 @@ function initLogoAnimation() {
                             laserDot.setAttribute('cx', b.x + b.width/2);
                             laserDot.setAttribute('cy', b.y + b.height/2);
                         } catch(e) {}
-                    }, i * 6);
+                    }, i * 15);
                 });
                 idx += batchSize;
-                setTimeout(carveBatch, 30);
+                setTimeout(carveBatch, 60);
             })();
         })
         .catch(() => startFlyAnimation());
     
+    // 飞入动画：LOGO开始缩小 = 页面同步渐显
+    // 渐显全程隐藏文字与下载按钮，LOGO到位后才触发
     function startFlyAnimation() {
-        // ★ 关键：LOGO开始缩小 = 页面开始变清晰（同步）
+        // LOGO开始缩小，页面同步由模糊渐显
         pageContent.classList.add('clear');
         logoCanvas.classList.add('flying');
         
-        // 飞入动画进行到约60%时（~0.9s），矢量到位
-        // 此时矢量渐隐、常态图标渐显（交叉过渡，不消失重生）
+        // 飞入动画1.5s结束 = LOGO到位
+        // 此时才触发：矢量→常态图标过渡
         setTimeout(() => {
-            logoCanvas.style.transition = 'opacity 0.4s ease';
+            logoCanvas.style.transition = 'opacity 0.3s ease';
             logoCanvas.style.opacity = '0';
             headerLogoImg.classList.add('show');
-        }, 900);
+        }, 1500);
         
-        // LOGO定格瞬间：文字出现并跃动
+        // LOGO固定后：文字出现并跃动
         setTimeout(() => {
             logoText.classList.add('show');
             logoText.classList.add('bounce');
-        }, 1000);
+        }, 1600);
         
-        // 右上角下载按钮同步上浮
+        // LOGO固定后：下载按钮上浮
         setTimeout(() => {
             downloadBtn.classList.add('show');
-        }, 1100);
+        }, 1700);
         
         // 开屏背景淡出
         setTimeout(() => {
             logoIntro.style.transition = 'opacity 0.4s ease';
             logoIntro.style.opacity = '0';
             setTimeout(() => logoIntro.style.display = 'none', 400);
-        }, 1400);
+        }, 2000);
     }
 }
 
