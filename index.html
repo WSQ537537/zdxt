@@ -42,9 +42,9 @@ body {
     gap: 12px;
 }
 .logo-img {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
     object-fit: cover;
     opacity: 0;
     transform: scale(0.8);
@@ -149,24 +149,39 @@ body {
 @keyframes logoFlyToHeader {
     0% { 
         transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+        opacity: 1;
     }
     25% {
         transform: translate(-50%, -50%) scale(0.7) rotateY(180deg);
+        opacity: 1;
     }
     50% {
-        transform: translate(-40%, -40%) scale(0.4) rotateY(360deg);
+        transform: translate(-35%, -35%) scale(0.4) rotateY(360deg);
+        opacity: 1;
     }
     75% {
-        transform: translate(-20%, -20%) scale(0.2) rotateY(540deg);
+        transform: translate(-15%, -15%) scale(0.2) rotateY(540deg);
+        opacity: 1;
     }
-    100% { 
-        transform: translate(0, 0) scale(0.133) rotateY(720deg);
-        top: 12px;
-        left: 48px;
+    95% {
+        transform: translate(0, 0) scale(0.15) rotateY(720deg);
+        top: 14px;
+        left: 52px;
         margin-left: 0;
         margin-top: 0;
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
+        opacity: 1;
+    }
+    100% { 
+        transform: translate(0, 0) scale(0.15) rotateY(720deg);
+        top: 14px;
+        left: 52px;
+        margin-left: 0;
+        margin-top: 0;
+        width: 36px;
+        height: 36px;
+        opacity: 0; /* 动画结束时隐藏，避免残留 */
     }
 }
 
@@ -237,14 +252,13 @@ body {
 /* ========== 通栏长条下载区块 ========== */
 .download-banner {
     background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15));
-    border-top: 1px solid rgba(255,255,255,0.1);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding: 24px 48px;
-    margin-top: 40px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 20px 32px;
+    margin: 40px 48px 0;
+    max-width: 1400px;
 }
 .download-banner-content {
-    max-width: 1400px;
-    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -301,11 +315,11 @@ body {
     transform: none;
 }
 @media (max-width: 640px) {
-    .download-banner { padding: 20px 24px; }
-    .download-banner-icon { width: 48px; height: 48px; }
-    .download-banner-title { font-size: 18px; }
-    .download-banner-desc { font-size: 13px; }
-    .download-banner-btn { padding: 12px 24px; font-size: 15px; }
+    .download-banner { padding: 16px 20px; margin: 32px 16px 0; }
+    .download-banner-icon { width: 44px; height: 44px; }
+    .download-banner-title { font-size: 16px; }
+    .download-banner-desc { font-size: 12px; }
+    .download-banner-btn { padding: 10px 20px; font-size: 14px; }
 }
 
 
