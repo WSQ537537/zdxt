@@ -88,20 +88,87 @@ body {
     display: flex; align-items: center; justify-content: center;
     z-index: 100000; background: #060b18;
 }
-.logo-canvas-container { position: relative; width: 320px; height: 320px; }
-.logo-carving-stage { position: relative; width: 100%; height: 100%; border-radius: 30px; overflow: hidden; }
-.logo-engrave-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.logo-canvas-container { 
+    position: relative; 
+    width: 320px; 
+    height: 320px; 
+    /* 移除背景，避免重叠 */
+    background: transparent;
+}
+.logo-carving-stage { 
+    position: relative; 
+    width: 100%; 
+    height: 100%; 
+    border-radius: 30px; 
+    overflow: hidden;
+    background: transparent;
+}
+.logo-engrave-svg { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: transparent;
+}
 .logo-engrave-svg .engrave-path { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); }
 .logo-engrave-svg .engrave-path.carved { transition: stroke-dashoffset 0.3s ease, opacity 0.3s ease; opacity: 1 !important; stroke-dashoffset: 0 !important; }
 .laser-dot { filter: drop-shadow(0 0 12px #00ffff) drop-shadow(0 0 24px #00ffff); }
 .spark { fill: #00ffff; filter: drop-shadow(0 0 4px #00ffff); }
-.logo-final { position: absolute; top: 0; left: 0; width: 320px; height: 320px; opacity: 0; border-radius: 30px; overflow: hidden; }
-.logo-final-img { width: 100%; height: 100%; object-fit: cover; border-radius: 30px; }
-.logo-final.show { opacity: 1; animation: logoFlyToCorner 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.1s; }
-@keyframes logoFlyToCorner {
-    0% { transform: scale(1) rotate(0deg); }
-    100% { transform: scale(0.125) rotate(720deg); }
+
+/* 雕刻完成后的Logo - 用于飞入动画 */
+.logo-final { 
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    width: 320px; 
+    height: 320px; 
+    margin-left: -160px; 
+    margin-top: -160px;
+    opacity: 0; 
+    border-radius: 30px; 
+    overflow: hidden;
+    background: transparent;
+    z-index: 100001;
 }
+.logo-final-img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    border-radius: 30px;
+    /* 移除阴影和边框，避免视觉重叠 */
+    box-shadow: none;
+}
+.logo-final.show { 
+    opacity: 1; 
+    animation: logoFlyToHeader 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    animation-delay: 0.1s; 
+}
+
+/* Logo从中心飞到左上角文字左侧的动画 */
+@keyframes logoFlyToHeader {
+    0% { 
+        transform: scale(1) rotateY(0deg) translate(0, 0);
+        top: 50%;
+        left: 50%;
+        margin-left: -160px;
+        margin-top: -160px;
+    }
+    60% {
+        transform: scale(0.4) rotateY(540deg) translate(-30vw, -40vh);
+    }
+    100% { 
+        transform: scale(0.125) rotateY(720deg) translate(0, 0);
+        /* 最终位置：header左上角，文字左侧 */
+        top: 12px;
+        left: 48px;
+        margin-left: 0;
+        margin-top: 0;
+        width: 40px;
+        height: 40px;
+    }
+}
+
 .logo-intro.fade-out { animation: introFadeOut 0.4s ease forwards; }
 @keyframes introFadeOut { to { opacity: 0; visibility: hidden; pointer-events: none; } }
 
@@ -1495,11 +1562,22 @@ function initLogoAnimation() {
     
     function finishAnimation() {
         logoFinal.classList.add('show');
-        headerLogoImg.classList.add('show');
+        
+        // 延迟显示header中的logo（等飞入动画快结束时）
+        setTimeout(() => {
+            headerLogoImg.classList.add('show');
+        }, 700);
+        
+        // 等飞入动画完成后淡出
         setTimeout(() => {
             logoIntro.classList.add('fade-out');
-            setTimeout(() => { logoIntro.style.display = 'none'; }, 400);
-        }, 900);
+            setTimeout(() => { 
+                logoIntro.style.display = 'none'; 
+                // 确保header logo显示
+                headerLogoImg.style.opacity = '1';
+                headerLogoImg.style.transform = 'scale(1)';
+            }, 400);
+        }, 950);
     }
 }
 
