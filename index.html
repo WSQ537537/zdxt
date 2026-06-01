@@ -177,14 +177,12 @@ body {
     }
 }
 
-/* 页面初始模糊可见（雕刻期间就能看到），LOGO缩小时变清晰 */
+/* 页面初始半透明，LOGO缩小时变清晰（无blur，性能流畅） */
 .page-content {
-    filter: blur(12px);
-    opacity: 0.5;
-    transition: filter 1s ease-out, opacity 0.8s ease-out;
+    opacity: 0.4;
+    transition: opacity 0.6s ease-out;
 }
 .page-content.clear {
-    filter: blur(0);
     opacity: 1;
 }
 
