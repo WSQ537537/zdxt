@@ -82,7 +82,7 @@ body {
     }
 }
 
-/* ========== Logo入场动画 - 矢量激光雕刻 ========== */
+/* ========== Logo入场动画 - 原始Logo激光雕刻 ========== */
 .logo-intro {
     position: fixed;
     top: 0;
@@ -102,17 +102,75 @@ body {
     height: 300px;
 }
 
-.logo-svg {
+/* 雕刻阶段 */
+.logo-carving-stage {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border-radius: 30px;
+    overflow: hidden;
+}
+
+.logo-source-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 30px;
+    opacity: 0;
+    filter: brightness(0.3) contrast(1.2);
+    animation: logoReveal 2s ease forwards;
+    animation-delay: 2s;
+}
+
+@keyframes logoReveal {
+    to {
+        opacity: 1;
+        filter: brightness(1) contrast(1);
+    }
+}
+
+/* SVG雕刻遮罩 */
+.logo-engrave-mask {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
 }
 
-/* 激光束样式 */
-.laser-beam {
-    filter: drop-shadow(0 0 10px #00ffff) drop-shadow(0 0 20px #00ffff);
+/* 扫描线 */
+.scan-line-h, .scan-line-v {
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+}
+
+.scan-line-h {
+    animation: scanH 0.15s linear forwards;
+}
+
+.scan-line-v {
+    animation: scanV 0.15s linear forwards;
+}
+
+@keyframes scanH {
+    to { stroke-dashoffset: 0; }
+}
+
+@keyframes scanV {
+    to { stroke-dashoffset: 0; }
+}
+
+/* 激光点 */
+.laser-dot {
+    animation: laserMove 2s ease-in-out forwards;
+}
+
+@keyframes laserMove {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 /* 火花粒子 */
@@ -126,10 +184,19 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 300px;
+    height: 300px;
     opacity: 0;
     transform: scale(1);
+    border-radius: 30px;
+    overflow: hidden;
+}
+
+.logo-final-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 30px;
 }
 
 .logo-final.show {
@@ -141,12 +208,13 @@ body {
 @keyframes logoFlyToCorner {
     0% {
         transform: scale(1) rotate(0deg);
+        top: 0;
+        left: 0;
     }
     100% {
         transform: scale(0.13) rotate(360deg);
-        position: fixed;
-        top: 12px;
-        left: 48px;
+        top: -130px;
+        left: -130px;
     }
 }
 
@@ -511,71 +579,68 @@ body {
 <body>
 <div class="hero-bg"></div>
 
-<!-- Logo入场动画 - SVG矢量激光雕刻 -->
+<!-- Logo入场动画 - 原始Logo激光雕刻 -->
 <div class="logo-intro" id="logoIntro">
     <div class="logo-canvas-container">
-        <svg class="logo-svg" viewBox="0 0 300 300" width="300" height="300">
-            <defs>
-                <!-- 激光发光滤镜 -->
-                <filter id="laserGlow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="4" result="blur"/>
-                    <feMerge>
-                        <feMergeNode in="blur"/>
-                        <feMergeNode in="blur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                </filter>
-                <!-- 雕刻渐变 -->
-                <linearGradient id="engraveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#3b82f6"/>
-                    <stop offset="50%" style="stop-color:#a855f7"/>
-                    <stop offset="100%" style="stop-color:#ec4899"/>
-                </linearGradient>
-            </defs>
-            
-            <!-- 背景圆环 -->
-            <circle class="logo-ring" cx="150" cy="150" r="140" fill="none" stroke="url(#engraveGrad)" stroke-width="3" opacity="0"/>
-            
-            <!-- 星星/星途图形 -->
-            <g class="logo-star" transform="translate(150,150)">
-                <path d="M0,-80 L20,-25 L80,-20 L35,15 L50,75 L0,45 L-50,75 L-35,15 L-80,-20 L-20,-25 Z" 
-                      fill="none" stroke="url(#engraveGrad)" stroke-width="3" stroke-linejoin="round" opacity="0"/>
-            </g>
-            
-            <!-- 内部装饰线条 -->
-            <g class="logo-lines" transform="translate(150,150)">
-                <line x1="0" y1="-60" x2="0" y2="60" stroke="url(#engraveGrad)" stroke-width="2" opacity="0"/>
-                <line x1="-52" y1="-30" x2="52" y2="30" stroke="url(#engraveGrad)" stroke-width="2" opacity="0"/>
-                <line x1="-52" y1="30" x2="52" y2="-30" stroke="url(#engraveGrad)" stroke-width="2" opacity="0"/>
-            </g>
-            
-            <!-- 中心圆 -->
-            <circle class="logo-center" cx="150" cy="150" r="25" fill="none" stroke="url(#engraveGrad)" stroke-width="3" opacity="0"/>
-            
-            <!-- 激光束 -->
-            <line class="laser-beam" x1="0" y1="0" x2="0" y2="0" stroke="#00ffff" stroke-width="4" filter="url(#laserGlow)" opacity="0"/>
-            
-            <!-- 雕刻火花粒子 -->
-            <g class="sparks"></g>
-        </svg>
+        <!-- 雕刻过程中的Logo（使用原图+SVG遮罩实现雕刻效果） -->
+        <div class="logo-carving-stage" id="logoCarvingStage">
+            <img src="images/logo-source.jpg" alt="智答星途" class="logo-source-img" id="logoSourceImg">
+            <!-- SVG雕刻遮罩层 -->
+            <svg class="logo-engrave-mask" viewBox="0 0 300 300" width="300" height="300">
+                <defs>
+                    <!-- 激光发光滤镜 -->
+                    <filter id="laserGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="3" result="blur"/>
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    <!-- 雕刻路径渐变 -->
+                    <linearGradient id="laserGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#00ffff"/>
+                        <stop offset="50%" style="stop-color:#ffffff"/>
+                        <stop offset="100%" style="stop-color:#00ffff"/>
+                    </linearGradient>
+                </defs>
+                
+                <!-- 雕刻网格线（模拟激光扫描路径） -->
+                <g class="engrave-grid" opacity="0">
+                    <!-- 水平扫描线 -->
+                    <line class="scan-line-h" x1="0" y1="30" x2="300" y2="30" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-h" x1="0" y1="60" x2="300" y2="60" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-h" x1="0" y1="90" x2="300" y2="90" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-h" x1="0" y1="120" x2="300" y2="120" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-h" x1="0" y1="150" x2="300" y2="150" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-h" x1="0" y1="180" x2="300" y2="180" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-h" x1="0" y1="210" x2="300" y2="210" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-h" x1="0" y1="240" x2="300" y2="240" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-h" x1="0" y1="270" x2="300" y2="270" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    
+                    <!-- 垂直扫描线 -->
+                    <line class="scan-line-v" x1="30" y1="0" x2="30" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-v" x1="60" y1="0" x2="60" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-v" x1="90" y1="0" x2="90" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-v" x1="120" y1="0" x2="120" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-v" x1="150" y1="0" x2="150" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-v" x1="180" y1="0" x2="180" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-v" x1="210" y1="0" x2="210" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-v" x1="240" y1="0" x2="240" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                    <line class="scan-line-v" x1="270" y1="0" x2="270" y2="300" stroke="url(#laserGrad)" stroke-width="2" filter="url(#laserGlow)"/>
+                </g>
+                
+                <!-- 激光点 -->
+                <circle class="laser-dot" cx="150" cy="150" r="4" fill="#00ffff" filter="url(#laserGlow)" opacity="0"/>
+                
+                <!-- 雕刻火花 -->
+                <g class="sparks"></g>
+            </svg>
+        </div>
         
         <!-- 雕刻完成后的Logo（用于旋转缩小动画） -->
         <div class="logo-final" id="logoFinal">
-            <svg viewBox="0 0 300 300" width="300" height="300">
-                <defs>
-                    <linearGradient id="finalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#3b82f6"/>
-                        <stop offset="50%" style="stop-color:#a855f7"/>
-                        <stop offset="100%" style="stop-color:#ec4899"/>
-                    </linearGradient>
-                </defs>
-                <circle cx="150" cy="150" r="140" fill="none" stroke="url(#finalGrad)" stroke-width="6"/>
-                <g transform="translate(150,150)">
-                    <path d="M0,-80 L20,-25 L80,-20 L35,15 L50,75 L0,45 L-50,75 L-35,15 L-80,-20 L-20,-25 Z" 
-                          fill="url(#finalGrad)" stroke="none"/>
-                </g>
-                <circle cx="150" cy="150" r="25" fill="#060b18" stroke="url(#finalGrad)" stroke-width="4"/>
-            </svg>
+            <img src="images/logo-source.jpg" alt="智答星途" class="logo-final-img">
         </div>
     </div>
 </div>
@@ -1275,155 +1340,105 @@ document.addEventListener('DOMContentLoaded', () => {
     initLogoAnimation();
 });
 
-// ========== Logo矢量激光雕刻动画 ==========
+// ========== Logo激光雕刻动画（使用原始Logo图） ==========
 function initLogoAnimation() {
     const logoIntro = document.getElementById('logoIntro');
     const logoFinal = document.getElementById('logoFinal');
     const headerLogoImg = document.getElementById('headerLogoImg');
+    const logoSourceImg = document.getElementById('logoSourceImg');
+    const engraveGrid = document.querySelector('.engrave-grid');
+    const laserDot = document.querySelector('.laser-dot');
     
-    // 雕刻路径定义（按顺序）
-    const carvePaths = [
-        { selector: '.logo-ring', duration: 800, delay: 300 },
-        { selector: '.logo-star path', duration: 1200, delay: 100 },
-        { selector: '.logo-lines line', duration: 600, delay: 50 },
-        { selector: '.logo-center', duration: 400, delay: 200 }
-    ];
+    // 预加载Logo图片
+    const preloadImg = new Image();
+    preloadImg.src = 'images/logo-source.jpg';
+    preloadImg.onload = function() {
+        // 开始雕刻动画序列
+        startEngravingSequence();
+    };
     
-    let currentPathIndex = 0;
-    
-    function carveNextPath() {
-        if (currentPathIndex >= carvePaths.length) {
-            // 雕刻完成，显示最终Logo并飞入角落
-            setTimeout(() => {
-                logoFinal.classList.add('show');
-                // 同步显示header中的logo
-                headerLogoImg.classList.add('show');
-                
-                // 淡出入场动画容器
-                setTimeout(() => {
-                    logoIntro.classList.add('fade-out');
-                    setTimeout(() => {
-                        logoIntro.style.display = 'none';
-                    }, 500);
-                }, 1500);
-            }, 300);
-            return;
-        }
-        
-        const pathConfig = carvePaths[currentPathIndex];
-        const element = document.querySelector(pathConfig.selector);
-        
-        if (element) {
-            // 如果是多个元素（如线条）
-            const elements = document.querySelectorAll(pathConfig.selector);
-            elements.forEach((el, idx) => {
-                setTimeout(() => {
-                    carveElement(el, pathConfig.duration);
-                }, idx * pathConfig.delay);
+    function startEngravingSequence() {
+        // 阶段1：显示雕刻网格（激光扫描线）
+        setTimeout(() => {
+            engraveGrid.style.opacity = '1';
+            
+            // 为每条扫描线添加动画延迟
+            const hLines = document.querySelectorAll('.scan-line-h');
+            const vLines = document.querySelectorAll('.scan-line-v');
+            
+            hLines.forEach((line, i) => {
+                line.style.animationDelay = `${i * 0.1}s`;
             });
             
-            // 计算总时间后雕刻下一个
-            const totalTime = elements.length * pathConfig.delay + pathConfig.duration;
+            vLines.forEach((line, i) => {
+                line.style.animationDelay = `${0.9 + i * 0.1}s`;
+            });
+        }, 300);
+        
+        // 阶段2：激光点移动雕刻
+        setTimeout(() => {
+            laserDot.style.opacity = '1';
+            animateLaserDot();
+        }, 2000);
+        
+        // 阶段3：Logo逐渐显现
+        setTimeout(() => {
+            logoSourceImg.style.opacity = '1';
+        }, 2500);
+        
+        // 阶段4：雕刻完成，显示最终Logo并飞入角落
+        setTimeout(() => {
+            logoFinal.classList.add('show');
+            headerLogoImg.classList.add('show');
+            
+            // 淡出入场动画容器
             setTimeout(() => {
-                currentPathIndex++;
-                carveNextPath();
-            }, totalTime);
-        } else {
-            currentPathIndex++;
-            carveNextPath();
-        }
+                logoIntro.classList.add('fade-out');
+                setTimeout(() => {
+                    logoIntro.style.display = 'none';
+                }, 500);
+            }, 1500);
+        }, 4500);
     }
     
-    function carveElement(element, duration) {
-        // 获取元素路径数据
-        const length = element.getTotalLength ? element.getTotalLength() : 1000;
+    function animateLaserDot() {
+        const path = [
+            { x: 50, y: 50 }, { x: 250, y: 50 },
+            { x: 250, y: 100 }, { x: 50, y: 100 },
+            { x: 50, y: 150 }, { x: 250, y: 150 },
+            { x: 250, y: 200 }, { x: 50, y: 200 },
+            { x: 50, y: 250 }, { x: 250, y: 250 },
+            { x: 150, y: 150 }
+        ];
         
-        // 设置初始状态
-        element.style.strokeDasharray = length;
-        element.style.strokeDashoffset = length;
-        element.style.opacity = '1';
+        let currentPoint = 0;
         
-        // 激光束移动到起点
-        const laserBeam = document.querySelector('.laser-beam');
-        const bbox = element.getBBox ? element.getBBox() : { x: 150, y: 150 };
-        
-        // 计算起点位置
-        let startX, startY;
-        if (element.tagName === 'circle') {
-            const cx = parseFloat(element.getAttribute('cx'));
-            const cy = parseFloat(element.getAttribute('cy'));
-            const r = parseFloat(element.getAttribute('r'));
-            startX = cx + r;
-            startY = cy;
-        } else if (element.tagName === 'line') {
-            startX = parseFloat(element.getAttribute('x1')) + 150;
-            startY = parseFloat(element.getAttribute('y1')) + 150;
-        } else {
-            startX = bbox.x + bbox.width / 2;
-            startY = bbox.y + bbox.height / 2;
-        }
-        
-        // 显示激光束
-        laserBeam.setAttribute('x1', startX);
-        laserBeam.setAttribute('y1', startY);
-        laserBeam.setAttribute('x2', startX);
-        laserBeam.setAttribute('y2', startY);
-        laserBeam.style.opacity = '1';
-        
-        // 执行雕刻动画
-        const startTime = performance.now();
-        
-        function animate(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const easeProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-            
-            // 更新路径绘制
-            const currentOffset = length * (1 - easeProgress);
-            element.style.strokeDashoffset = currentOffset;
-            
-            // 更新激光位置（简化版：沿路径移动）
-            updateLaserPosition(element, easeProgress, laserBeam);
-            
-            // 生成火花
-            if (Math.random() > 0.7) {
-                createSpark(startX, startY);
+        function moveToNextPoint() {
+            if (currentPoint >= path.length) {
+                laserDot.style.opacity = '0';
+                return;
             }
             
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                // 雕刻完成
-                laserBeam.style.opacity = '0';
-                element.style.fill = element.classList.contains('logo-star') ? 'url(#engraveGrad)' : 'none';
-                element.style.fillOpacity = element.classList.contains('logo-star') ? '1' : '0';
-            }
+            const point = path[currentPoint];
+            laserDot.setAttribute('cx', point.x);
+            laserDot.setAttribute('cy', point.y);
+            
+            // 产生火花
+            createSpark(point.x, point.y);
+            
+            currentPoint++;
+            setTimeout(moveToNextPoint, 200);
         }
         
-        requestAnimationFrame(animate);
-    }
-    
-    function updateLaserPosition(element, progress, laserBeam) {
-        // 简化的激光位置更新
-        const bbox = element.getBBox ? element.getBBox() : { x: 150, y: 150, width: 100, height: 100 };
-        const angle = progress * Math.PI * 2;
-        const radius = 100;
-        
-        const x1 = 150 + Math.cos(angle) * radius;
-        const y1 = 150 + Math.sin(angle) * radius;
-        
-        laserBeam.setAttribute('x1', x1);
-        laserBeam.setAttribute('y1', y1);
-        laserBeam.setAttribute('x2', x1 + (Math.random() - 0.5) * 20);
-        laserBeam.setAttribute('y2', y1 + (Math.random() - 0.5) * 20);
+        moveToNextPoint();
     }
     
     function createSpark(x, y) {
         const sparksGroup = document.querySelector('.sparks');
         const spark = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        spark.setAttribute('cx', x + (Math.random() - 0.5) * 40);
-        spark.setAttribute('cy', y + (Math.random() - 0.5) * 40);
-        spark.setAttribute('r', Math.random() * 3 + 1);
+        spark.setAttribute('cx', x + (Math.random() - 0.5) * 30);
+        spark.setAttribute('cy', y + (Math.random() - 0.5) * 30);
+        spark.setAttribute('r', Math.random() * 2 + 0.5);
         spark.setAttribute('class', 'spark');
         spark.style.opacity = '1';
         
@@ -1431,17 +1446,11 @@ function initLogoAnimation() {
         
         // 火花消失动画
         setTimeout(() => {
-            spark.style.transition = 'opacity 0.3s, transform 0.3s';
+            spark.style.transition = 'opacity 0.2s';
             spark.style.opacity = '0';
-            spark.style.transform = `translate(${(Math.random() - 0.5) * 60}px, ${(Math.random() - 0.5) * 60}px)`;
-            setTimeout(() => spark.remove(), 300);
-        }, 50);
+            setTimeout(() => spark.remove(), 200);
+        }, 100);
     }
-    
-    // 开始雕刻动画
-    setTimeout(() => {
-        carveNextPath();
-    }, 500);
 }
 
 // ========== 图片加载优化 ==========
