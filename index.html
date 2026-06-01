@@ -165,14 +165,14 @@ body {
     }
 }
 
-/* 页面从模糊透明变清晰 - 更平滑的过渡 */
+/* 页面从模糊透明变清晰 - 快速过渡 */
 .page-content {
-    filter: blur(8px);
-    opacity: 0;
-    transform: scale(0.98);
-    transition: filter 1s cubic-bezier(0.25, 0.1, 0.25, 1), 
-                opacity 1s cubic-bezier(0.25, 0.1, 0.25, 1),
-                transform 1s cubic-bezier(0.25, 0.1, 0.25, 1);
+    filter: blur(5px);
+    opacity: 0.3;
+    transform: scale(0.99);
+    transition: filter 0.5s ease-out, 
+                opacity 0.4s ease-out,
+                transform 0.5s ease-out;
 }
 .page-content.clear {
     filter: blur(0);
