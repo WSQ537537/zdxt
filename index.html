@@ -1533,7 +1533,12 @@ async function startDownload() {
         document.body.removeChild(link);
         
         // 显示成功提示
-        btnText.textContent = `✅ 正在下载 (${bestSource.name})`;
+        btnText.textContent = `✅ 下载已开始`;
+        
+        // 2秒后恢复原状态
+        setTimeout(() => {
+            btnText.textContent = '📥 立即下载';
+        }, 2000);
         
     } catch (error) {
         console.error('下载失败:', error);
