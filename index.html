@@ -1298,8 +1298,6 @@ function initModule(moduleId) {
     const container = item.querySelector('.cards-container');
     const prevBtn = item.querySelector('.nav-prev');
     const nextBtn = item.querySelector('.nav-next');
-    const fadeLeft = item.querySelector('.fade-left');
-    const fadeRight = item.querySelector('.fade-right');
     const cards = track.querySelectorAll('.card-fixed');
     
     if (cards.length === 0) return;
@@ -1328,23 +1326,15 @@ function initModule(moduleId) {
         track.style.transform = `translateX(${-currentTranslate}px)`;
         
         if (!needsNav) {
-            // 无溢出：彻底隐藏所有箭头和遮罩
             prevBtn.classList.remove('show');
             nextBtn.classList.remove('show');
-            fadeLeft.classList.remove('show');
-            fadeRight.classList.remove('show');
             return;
         }
         
-        // 有溢出时立即显示渐变遮罩
-        // 左渐变：不在起始位置时显示
+        // 有溢出时显示导航按钮
         prevBtn.classList.toggle('show', state.index > 0);
-        fadeLeft.classList.toggle('show', state.index > 0);
-        
-        // 右渐变：滑到末尾时隐藏（末卡完整露出）
         const atEnd = state.index >= maxSteps;
         nextBtn.classList.toggle('show', !atEnd);
-        fadeRight.classList.toggle('show', !atEnd);
     }
     
     update();
