@@ -27,18 +27,177 @@ body {
 
 .header {
     position: fixed; top: 0; left: 0; width: 100%;
-    padding: 16px 48px;
+    padding: 12px 48px;
     display: flex; justify-content: space-between; align-items: center;
     background: rgba(6,11,24,0.88);
     backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(255,255,255,0.06);
     z-index: 9999;
 }
+
+/* ========== Logo艺术字 ========== */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.logo-img.show {
+    opacity: 1;
+    transform: scale(1);
+}
+.logo-text {
+    display: flex;
+    gap: 2px;
+}
+.logo-char {
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #3b82f6 0%, #a855f7 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 30px rgba(59,130,246,0.3);
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: charDrop 0.6s ease forwards;
+}
+.logo-char:nth-child(1) { animation-delay: 2.8s; }
+.logo-char:nth-child(2) { animation-delay: 2.9s; }
+.logo-char:nth-child(3) { animation-delay: 3.0s; }
+.logo-char:nth-child(4) { animation-delay: 3.1s; }
+
+@keyframes charDrop {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== Logo入场动画 ========== */
+.logo-intro {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    background: #060b18;
+    animation: introFadeOut 0.8s ease forwards;
+    animation-delay: 2.5s;
+}
+
+.logo-carving {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    animation: logoRotateScale 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 1.5s;
+}
+
+.logo-carving img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* 雕刻特效 */
+.carving-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 30px;
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.1) 25%,
+        rgba(255,255,255,0.3) 50%,
+        rgba(255,255,255,0.1) 75%,
+        rgba(255,255,255,0) 100%
+    );
+    animation: carvingScan 1.5s ease-in-out;
+}
+
+.carving-effect::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 32px;
+    background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899, #3b82f6);
+    background-size: 400% 400%;
+    z-index: -1;
+    animation: borderGlow 2s ease infinite, carvingBorder 1.5s ease-in-out;
+    opacity: 0;
+}
+
+@keyframes carvingScan {
+    0% {
+        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        opacity: 1;
+    }
+    50% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        opacity: 1;
+    }
+    100% {
+        clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+        opacity: 0;
+    }
+}
+
+@keyframes carvingBorder {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+@keyframes borderGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes logoRotateScale {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    100% {
+        transform: rotate(360deg) scale(0.13);
+    }
+}
+
+@keyframes introFadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+}
+
+/* 旧logo样式保留 */
 .logo {
     font-size: 30px; font-weight: 800;
     background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     letter-spacing: 2px;
+    display: none;
 }
 .download-btn {
     padding: 11px 28px;
@@ -379,8 +538,25 @@ body {
 
 <body>
 <div class="hero-bg"></div>
+
+<!-- Logo入场动画 -->
+<div class="logo-intro" id="logoIntro">
+    <div class="logo-carving">
+        <img src="images/logo-source.jpg" alt="智答星途" id="introLogoImg">
+        <div class="carving-effect"></div>
+    </div>
+</div>
+
 <div class="header">
-    <div class="logo">智答星途</div>
+    <div class="logo-container">
+        <img src="images/logo-source.jpg" alt="" class="logo-img" id="headerLogoImg">
+        <div class="logo-text">
+            <span class="logo-char">智</span>
+            <span class="logo-char">答</span>
+            <span class="logo-char">星</span>
+            <span class="logo-char">途</span>
+        </div>
+    </div>
     <a href="zdxt.apk" class="download-btn">📥 立即下载</a>
 </div>
 <div class="scroll-hint" id="scrollHint">往下滑了解更多</div>
@@ -1061,7 +1237,34 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 图片懒加载和加载优化
     initImageLoading();
+    
+    // Logo动画完成后显示header中的logo
+    initLogoAnimation();
 });
+
+// ========== Logo入场动画控制 ==========
+function initLogoAnimation() {
+    const headerLogoImg = document.getElementById('headerLogoImg');
+    const introLogoImg = document.getElementById('introLogoImg');
+    
+    // 预加载Logo图片
+    const preloadImg = new Image();
+    preloadImg.src = 'images/logo-source.jpg';
+    preloadImg.onload = function() {
+        // 图片加载完成后，延迟显示header中的logo
+        setTimeout(() => {
+            headerLogoImg.classList.add('show');
+        }, 2800);
+    };
+    
+    // 清理入场动画元素
+    setTimeout(() => {
+        const logoIntro = document.getElementById('logoIntro');
+        if (logoIntro) {
+            logoIntro.style.display = 'none';
+        }
+    }, 3500);
+}
 
 // ========== 图片加载优化 ==========
 function initImageLoading() {
