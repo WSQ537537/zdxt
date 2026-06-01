@@ -1581,6 +1581,14 @@ function initLogoAnimation() {
     const logoText = document.querySelector('.logo-text');
     const downloadBtn = document.querySelector('.download-btn');
     
+    // 立刻显示页面（不等待任何动画）
+    pageContent.classList.add('clear');
+    
+    // 设置总动画时间上限（3秒后强制结束）
+    const maxTime = setTimeout(() => {
+        finishAnimation();
+    }, 3000);
+    
     // 加载矢量SVG路径
     fetch('images/logo-vector.svg')
         .then(r => r.text())
@@ -1613,11 +1621,8 @@ function initLogoAnimation() {
         .catch(() => finishAnimation());
     
     function startCarving(pathElements) {
-        // 雕刻开始时立刻显示页面（杜绝黑屏等待）
-        pageContent.classList.add('clear');
-        
         const total = pathElements.length;
-        const batchSize = Math.max(3, Math.ceil(total / 12));
+        const batchSize = Math.max(5, Math.ceil(total / 8));
         let currentIdx = 0;
         
         laserDot.style.opacity = '1';
@@ -1625,7 +1630,7 @@ function initLogoAnimation() {
         function carveBatch() {
             if (currentIdx >= total) {
                 laserDot.style.opacity = '0';
-                setTimeout(startFlyAnimation, 150);
+                setTimeout(finishAnimation, 100);
                 return;
             }
             
@@ -1642,13 +1647,13 @@ function initLogoAnimation() {
                         const cy = bbox.y + bbox.height / 2;
                         laserDot.setAttribute('cx', cx);
                         laserDot.setAttribute('cy', cy);
-                        if (Math.random() > 0.6) createSpark(cx, cy);
+                        if (Math.random() > 0.5) createSpark(cx, cy);
                     } catch(e) {}
-                }, i * 15);
+                }, i * 10);
             });
             
             currentIdx += batchSize;
-            setTimeout(carveBatch, 50);
+            setTimeout(carveBatch, 40);
         }
         
         carveBatch();
@@ -1657,56 +1662,47 @@ function initLogoAnimation() {
     function createSpark(x, y) {
         const sparksGroup = svgEl.querySelector('.sparks');
         const spark = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        spark.setAttribute('cx', x + (Math.random() - 0.5) * 50);
-        spark.setAttribute('cy', y + (Math.random() - 0.5) * 50);
-        spark.setAttribute('r', Math.random() * 3 + 1);
+        spark.setAttribute('cx', x + (Math.random() - 0.5) * 40);
+        spark.setAttribute('cy', y + (Math.random() - 0.5) * 40);
+        spark.setAttribute('r', Math.random() * 2 + 1);
         spark.setAttribute('class', 'spark');
         spark.style.opacity = '1';
         sparksGroup.appendChild(spark);
         setTimeout(() => {
-            spark.style.transition = 'opacity 0.15s';
             spark.style.opacity = '0';
-            setTimeout(() => spark.remove(), 150);
-        }, 60);
+            setTimeout(() => spark.remove(), 100);
+        }, 50);
     }
     
-    function startFlyAnimation() {
+    function finishAnimation() {
+        clearTimeout(maxTime);
+        
         // 开始飞入动画
         logoCanvas.classList.add('flying');
         
-        // 0.8s后：header logo显示（飞入动画中后期，平滑过渡）
+        // 0.6s后：header logo显示
         setTimeout(() => {
             headerLogoImg.classList.add('show');
-        }, 800);
+        }, 600);
         
-        // 1.2s后：Logo定格，文字显示并跃动
+        // 1.0s后：文字显示并跃动
         setTimeout(() => {
             logoText.classList.add('show');
             logoText.classList.add('bounce');
-        }, 1200);
+        }, 1000);
         
-        // 1.5s后：下载按钮上浮
+        // 1.2s后：下载按钮上浮
         setTimeout(() => {
             downloadBtn.classList.add('show');
-        }, 1500);
+        }, 1200);
         
-        // 1.8s后：开屏淡出
+        // 1.5s后：开屏淡出
         setTimeout(() => {
             logoIntro.classList.add('fade-out');
             setTimeout(() => { 
                 logoIntro.style.display = 'none'; 
             }, 300);
-        }, 1800);
-    }
-    
-    function finishAnimation() {
-        // 如果加载失败，直接显示页面
-        logoIntro.style.display = 'none';
-        pageContent.classList.add('clear');
-        headerLogoImg.classList.add('show');
-        logoText.classList.add('show');
-        logoText.classList.add('bounce');
-        downloadBtn.classList.add('show');
+        }, 1500);
     }
 }
 
