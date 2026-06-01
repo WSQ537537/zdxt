@@ -1292,10 +1292,27 @@ body {
 </section>
 
 <script>
-// ========== 滚动动画 ==========
+// ========== 滚动动画 + 页面出现时逐个浮入 ==========
 const els = document.querySelectorAll('.fade-in');
-const ob = new IntersectionObserver(e=>e.forEach(i=>i.target.classList.toggle('visible',i.isIntersecting)),{threshold:0.1});
-els.forEach(e=>ob.observe(e));
+// 页面出现时自动逐个浮入（递增延迟）
+function triggerFadeIn() {
+    els.forEach((el, i) => {
+        setTimeout(() => {
+            el.classList.add('visible');
+        }, i * 80); // 每个元素间隔80ms
+    });
+}
+// 监听页面变清晰后触发
+const pageContent = document.getElementById('pageContent');
+const fadeObserver = new MutationObserver(() => {
+    if (pageContent.classList.contains('clear')) {
+        triggerFadeIn();
+        fadeObserver.disconnect();
+    }
+});
+fadeObserver.observe(pageContent, { attributes: true, attributeFilter: ['class'] });
+// 如果页面已经清晰（备用）
+if (pageContent.classList.contains('clear')) triggerFadeIn();
 
 // ========== 图片弹窗查看逻辑 ==========
 // 所有图片均可点击弹窗查看原图
