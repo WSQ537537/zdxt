@@ -25,14 +25,17 @@ body {
 }
 @keyframes flow { 0% { transform: scale(1); } 100% { transform: scale(1.08) rotate(1deg); } }
 
+/* 顶部导航栏 - 独立分区，不参与页面模糊过渡 */
 .header {
     position: fixed; top: 0; left: 0; width: 100%;
     padding: 12px 48px;
     display: flex; justify-content: space-between; align-items: center;
-    background: rgba(6,11,24,0.88);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: rgba(6,11,24,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
     z-index: 9999;
+    /* 独立渲染，不继承页面模糊 */
+    isolation: isolate;
 }
 
 /* ========== Logo艺术字 ========== */
@@ -165,14 +168,14 @@ body {
     }
 }
 
-/* 页面从模糊透明变清晰 - 快速过渡 */
+/* 页面从模糊透明变清晰 - LOGO旋转时同步显现 */
 .page-content {
-    filter: blur(5px);
-    opacity: 0.3;
-    transform: scale(0.99);
-    transition: filter 0.5s ease-out, 
-                opacity 0.4s ease-out,
-                transform 0.5s ease-out;
+    filter: blur(12px);
+    opacity: 0.2;
+    transform: scale(0.97);
+    transition: filter 1.2s ease-out, 
+                opacity 1s ease-out,
+                transform 1s ease-out;
 }
 .page-content.clear {
     filter: blur(0);
@@ -715,9 +718,7 @@ body {
     </div>
 </div>
 
-<!-- 页面内容容器 -->
-<div class="page-content" id="pageContent">
-
+<!-- 顶部导航栏 - 独立分区 -->
 <div class="header">
     <div class="logo-container">
         <img src="images/logo-source.jpg" alt="" class="logo-img" id="headerLogoImg">
@@ -733,6 +734,10 @@ body {
         <span class="btn-loading" style="display:none;">⚡ 智能加速中...</span>
     </button>
 </div>
+
+<!-- 页面内容容器 -->
+<div class="page-content" id="pageContent">
+
 <div class="scroll-hint" id="scrollHint">往下滑了解更多</div>
 
 <!-- 图片弹窗 -->
@@ -1581,10 +1586,22 @@ function initLogoAnimation() {
     const logoText = document.querySelector('.logo-text');
     const downloadBtn = document.querySelector('.download-btn');
     
-    // 第1步：页面立即显示（0延迟）
-    pageContent.classList.add('clear');
+    // 预加载关键资源
+    const preloadResources = () => {
+        // 预加载图片
+        document.querySelectorAll('.card-img-wrap img').forEach(img => {
+            if (img.dataset.src) {
+                const preload = new Image();
+                preload.src = img.dataset.src;
+            }
+        });
+        // 预加载Logo
+        const logoPreload = new Image();
+        logoPreload.src = 'images/logo-source.jpg';
+    };
+    preloadResources();
     
-    // 第2步：加载并雕刻（页面已在显示）
+    // 加载并雕刻（页面初始模糊状态）
     fetch('images/logo-vector.svg')
         .then(r => r.text())
         .then(svgText => {
@@ -1622,8 +1639,7 @@ function initLogoAnimation() {
             function carveBatch() {
                 if (currentIdx >= total) {
                     laserDot.style.opacity = '0';
-                    // 雕刻完成，开始飞入
-                    setTimeout(startFlyAnimation, 100);
+                    setTimeout(startFlyAnimation, 80);
                     return;
                 }
                 
@@ -1637,48 +1653,47 @@ function initLogoAnimation() {
                             laserDot.setAttribute('cx', bbox.x + bbox.width / 2);
                             laserDot.setAttribute('cy', bbox.y + bbox.height / 2);
                         } catch(e) {}
-                    }, i * 8);
+                    }, i * 6);
                 });
                 
                 currentIdx += batchSize;
-                setTimeout(carveBatch, 35);
+                setTimeout(carveBatch, 30);
             }
             
             carveBatch();
         })
         .catch(() => startFlyAnimation());
     
-    // 第3步：飞入动画（矢量Logo旋转到左上角）
+    // 飞入动画：LOGO旋转缩小，页面同步变清晰
     function startFlyAnimation() {
-        // 开始飞入
+        // LOGO开始旋转缩小时，页面由模糊逐步清晰
+        pageContent.classList.add('clear');
         logoCanvas.classList.add('flying');
         
-        // 0.8s：矢量渐隐，常态图标显示（交叉过渡）
+        // 0.6s：矢量渐隐，常态图标显示（交叉过渡，不消失）
         setTimeout(() => {
-            logoCanvas.style.transition = 'opacity 0.4s ease';
+            logoCanvas.style.transition = 'opacity 0.5s ease';
             logoCanvas.style.opacity = '0';
             headerLogoImg.classList.add('show');
-        }, 800);
+        }, 600);
         
-        // 1.0s：文字显示并跃动
+        // 0.8s：LOGO固定，文字显示并跃动
         setTimeout(() => {
             logoText.classList.add('show');
             logoText.classList.add('bounce');
-        }, 1000);
+        }, 800);
         
-        // 1.2s：下载按钮上浮
+        // 1.0s：下载按钮上浮
         setTimeout(() => {
             downloadBtn.classList.add('show');
-        }, 1200);
+        }, 1000);
         
-        // 1.5s：开屏层淡出
+        // 1.3s：开屏层淡出
         setTimeout(() => {
-            logoIntro.style.transition = 'opacity 0.4s ease';
+            logoIntro.style.transition = 'opacity 0.5s ease';
             logoIntro.style.opacity = '0';
-            setTimeout(() => { 
-                logoIntro.style.display = 'none'; 
-            }, 400);
-        }, 1500);
+            setTimeout(() => logoIntro.style.display = 'none', 500);
+        }, 1300);
     }
 }
 
