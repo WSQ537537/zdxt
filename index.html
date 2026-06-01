@@ -1613,6 +1613,9 @@ function initLogoAnimation() {
         .catch(() => finishAnimation());
     
     function startCarving(pathElements) {
+        // 雕刻开始时立刻显示页面（杜绝黑屏等待）
+        pageContent.classList.add('clear');
+        
         const total = pathElements.length;
         const batchSize = Math.max(3, Math.ceil(total / 12));
         let currentIdx = 0;
@@ -1622,7 +1625,7 @@ function initLogoAnimation() {
         function carveBatch() {
             if (currentIdx >= total) {
                 laserDot.style.opacity = '0';
-                setTimeout(startFlyAnimation, 200);
+                setTimeout(startFlyAnimation, 150);
                 return;
             }
             
@@ -1641,11 +1644,11 @@ function initLogoAnimation() {
                         laserDot.setAttribute('cy', cy);
                         if (Math.random() > 0.6) createSpark(cx, cy);
                     } catch(e) {}
-                }, i * 20);
+                }, i * 15);
             });
             
             currentIdx += batchSize;
-            setTimeout(carveBatch, 60);
+            setTimeout(carveBatch, 50);
         }
         
         carveBatch();
@@ -1668,35 +1671,32 @@ function initLogoAnimation() {
     }
     
     function startFlyAnimation() {
-        // 立刻开始显示页面（杜绝黑屏）
-        pageContent.classList.add('clear');
-        
         // 开始飞入动画
         logoCanvas.classList.add('flying');
         
-        // 1.0s后：header logo显示（飞入动画中后期，平滑过渡）
+        // 0.8s后：header logo显示（飞入动画中后期，平滑过渡）
         setTimeout(() => {
             headerLogoImg.classList.add('show');
-        }, 1000);
+        }, 800);
         
-        // 1.5s后：Logo定格，文字显示并跃动
+        // 1.2s后：Logo定格，文字显示并跃动
         setTimeout(() => {
             logoText.classList.add('show');
             logoText.classList.add('bounce');
-        }, 1500);
+        }, 1200);
         
-        // 1.8s后：下载按钮上浮
+        // 1.5s后：下载按钮上浮
         setTimeout(() => {
             downloadBtn.classList.add('show');
-        }, 1800);
+        }, 1500);
         
-        // 2.0s后：开屏淡出
+        // 1.8s后：开屏淡出
         setTimeout(() => {
             logoIntro.classList.add('fade-out');
             setTimeout(() => { 
                 logoIntro.style.display = 'none'; 
-            }, 400);
-        }, 2000);
+            }, 300);
+        }, 1800);
     }
     
     function finishAnimation() {
