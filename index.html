@@ -275,26 +275,61 @@ body {
 .card-large > p { color: #cbd5e1; font-size: 15px; line-height: 1.85; margin-bottom: 24px; }
 
 /* ========== 一行多模块自适应布局 ========== */
-/* 模块排布规则：单行排布完1-2个模块后，剩余空间够容纳单张卡片则接续下个模块 */
+/* 规则：单行最多4卡，先完整展示前一模块，剩余宽度够才同行摆放 */
 .module-row {
     display: flex;
     gap: 16px;
     margin-bottom: 16px;
     align-items: flex-start;
-    flex-wrap: nowrap; /* 默认单行 */
+    flex-wrap: wrap; /* 允许换行 */
     width: 100%;
 }
+
+/* 默认模块样式 */
 .module-row .module-item {
-    flex: 1 1 0; /* 等分空间 */
-    min-width: 0; /* 允许收缩 */
-    max-width: 100%;
+    flex: 0 0 auto; /* 不自动伸缩 */
+    min-width: auto;
 }
-/* 多模块时自动调整 */
-.module-row:has(.module-item:nth-child(2)) .module-item {
-    flex: 1 1 calc(50% - 8px);
+
+/* 根据卡片数量计算模块宽度 */
+/* 1卡模块 = 280px */
+.module-row .module-item[data-module="admin-profile"],
+.module-row .module-item[data-module="admin-checkin"],
+.module-row .module-item[data-module="student-profile"],
+.module-row .module-item[data-module="parent-profile"] {
+    width: calc(280px + 32px); /* 卡片宽度 + padding */
 }
-.module-row:has(.module-item:nth-child(3)) .module-item {
-    flex: 1 1 calc(33.333% - 11px);
+
+/* 2卡模块 = 576px (280*2 + 16间隙) */
+.module-row .module-item:has(.card-fixed:nth-child(2)):not(:has(.card-fixed:nth-child(3))) {
+    width: calc(576px + 32px);
+}
+
+/* 3卡模块 = 872px (280*3 + 16*2间隙) */
+.module-row .module-item:has(.card-fixed:nth-child(3)) {
+    width: calc(872px + 32px);
+}
+
+/* 4卡及以上模块 = 100% */
+.module-row .module-item:has(.card-fixed:nth-child(4)) {
+    width: 100%;
+}
+
+/* 学习模块(3卡)独占一行 */
+.module-row:has(.module-item[data-module="admin-study"]) {
+    flex-wrap: wrap;
+}
+.module-row:has(.module-item[data-module="admin-study"]) .module-item[data-module="admin-study"] {
+    width: 100%;
+}
+
+/* AI助手和通知模块换行 */
+.module-row:has(.module-item[data-module="admin-ai"]) {
+    flex-wrap: wrap;
+}
+.module-row:has(.module-item[data-module="admin-ai"]) .module-item[data-module="admin-ai"],
+.module-row:has(.module-item[data-module="admin-ai"]) .module-item[data-module="admin-notice"] {
+    width: calc(872px + 32px);
 }
 
 /* 模块头部 */
@@ -503,16 +538,33 @@ body {
     .section { padding: 110px 16px 40px; }
     .card-large { padding: 20px; border-radius: 16px; }
     .module-row { 
-        flex-direction: column; 
+        flex-direction: row; 
         flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 12px;
     }
     .module-row .module-item { 
-        flex: 1 1 100% !important; 
+        flex: 0 0 auto !important; 
+        width: 100% !important;
         max-width: 100%;
-        width: 100%;
+        min-width: auto;
     }
-    .card-fixed { width: 260px; height: 380px; }
+    .card-fixed { width: 260px; height: 380px; flex-shrink: 0; }
     .card-img-wrap { height: 200px; }
+    /* 移动端滚动优化 - 每次滚动一个完整卡片 */
+    .cards-track {
+        gap: 12px;
+    }
+    .cards-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .cards-container::-webkit-scrollbar {
+        display: none;
+    }
     /* 小屏幕弹窗调整 */
     .image-modal { padding: 60px 16px; }
     .image-modal img { max-width: 100%; }
@@ -760,7 +812,7 @@ body {
             </div>
         </div>
         
-        <!-- 学习 + AI + 通知 三模块并排 -->
+        <!-- 学习模块（独占一行） -->
         <div class="module-row">
             <div class="module-item" data-module="admin-study">
                 <div class="module-header">
@@ -789,6 +841,10 @@ body {
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- AI助手 + 通知 模块（换行） -->
+        <div class="module-row">
             <div class="module-item" data-module="admin-ai">
                 <div class="module-header">
                     <span class="module-title">🤖 AI助手</span>
@@ -1272,9 +1328,9 @@ function initModule(moduleId) {
     
     if (cards.length === 0) return;
     
-    const GAP = 16;
-    const CARD_W = 280;
-    const STEP = CARD_W + GAP; // 每次滑动一格
+    const GAP = window.innerWidth <= 768 ? 12 : 16; // 移动端间隙更小
+    const CARD_W = window.innerWidth <= 768 ? 260 : 280; // 移动端卡片宽度
+    const STEP = CARD_W + GAP; // 每次滑动一格完整卡片
     
     if (!moduleStates[moduleId]) moduleStates[moduleId] = { index: 0 };
     const state = moduleStates[moduleId];
