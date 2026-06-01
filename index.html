@@ -179,16 +179,16 @@ body {
 
 /* 页面初始半透明，LOGO缩小时变清晰（无blur，性能流畅） */
 .page-content {
-    opacity: 0.4;
-    transition: opacity 0.6s ease-out;
+    opacity: 0.3;
+    transition: opacity 0.8s ease-out;
 }
 .page-content.clear {
     opacity: 1;
 }
 
-/* 文字小幅跃动动画 */
+/* 文字跃动动画 - 更流畅 */
 .logo-text.bounce .logo-char {
-    animation: charBounce 0.5s ease forwards;
+    animation: charBounce 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 @keyframes charBounce {
     0%, 100% { transform: translateY(0); }
@@ -428,13 +428,16 @@ body {
     display: none; /* 默认隐藏 */
     align-items: center;
     justify-content: center;
-    transition: all 0.3s;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                background 0.3s ease, 
+                border-color 0.3s ease;
     line-height: 1;
 }
 .nav-arrow.show { display: flex; }
 .nav-arrow:hover {
     background: linear-gradient(135deg, rgba(59,130,246,0.5), rgba(139,92,246,0.5));
     transform: scale(1.15);
+    border-color: rgba(59,130,246,0.6);
     box-shadow: 0 0 16px rgba(59,130,246,0.4);
 }
 
@@ -448,6 +451,7 @@ body {
     display: flex;
     gap: 16px;
     max-width: 100%;
+    transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* ========== 固定尺寸卡片 ========== */
@@ -459,16 +463,18 @@ body {
     border-radius: 16px;
     padding: 16px;
     flex-shrink: 0;
-    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                background 0.3s ease, 
+                border-color 0.3s ease;
     box-shadow: none;
     display: flex;
     flex-direction: column;
     cursor: pointer;
 }
 .card-fixed:hover {
-    transform: translateY(-6px);
-    background: linear-gradient(145deg, rgba(59,130,246,0.1), rgba(139,92,246,0.06));
-    border-color: rgba(59,130,246,0.3);
+    transform: translateY(-8px) scale(1.02);
+    background: linear-gradient(145deg, rgba(59,130,246,0.12), rgba(139,92,246,0.08));
+    border-color: rgba(59,130,246,0.35);
     box-shadow: none;
 }
 
@@ -538,9 +544,16 @@ body {
 .role-parent { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.2); }
 .role-all { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
 
-/* 滚动动画 */
-.fade-in { opacity: 0; transform: translateY(40px); transition: all 0.9s cubic-bezier(0.16,1,0.3,1); }
-.fade-in.visible { opacity: 1; transform: translateY(0); }
+/* 滚动动画 - 更流畅的渐入效果 */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+    transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
 
 /* 滚动引导蒙版 */
 .scroll-hint {
@@ -1224,27 +1237,47 @@ body {
 </section>
 
 <script>
-// ========== 滚动动画 + 页面出现时逐个浮入 ==========
-const els = document.querySelectorAll('.fade-in');
-// 页面出现时自动逐个浮入（递增延迟）
-function triggerFadeIn() {
-    els.forEach((el, i) => {
-        setTimeout(() => {
-            el.classList.add('visible');
-        }, i * 80); // 每个元素间隔80ms
+// ========== 滚动动画 - IntersectionObserver + 首屏自动触发 ==========
+const fadeElements = document.querySelectorAll('.fade-in');
+
+// IntersectionObserver：滚动时元素进入视口触发渐入
+const scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            scrollObserver.unobserve(entry.target); // 只触发一次
+        }
+    });
+}, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+fadeElements.forEach(el => scrollObserver.observe(el));
+
+// 页面变清晰时，首屏元素逐个浮入（带延迟，形成波浪效果）
+function triggerFirstScreenFadeIn() {
+    const viewportHeight = window.innerHeight;
+    fadeElements.forEach((el, i) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < viewportHeight) {
+            // 首屏元素：逐个延迟浮入
+            setTimeout(() => {
+                el.classList.add('visible');
+            }, i * 60);
+        }
     });
 }
-// 监听页面变清晰后触发
+
+// 监听页面变清晰后触发首屏动画
 const pageContent = document.getElementById('pageContent');
-const fadeObserver = new MutationObserver(() => {
+const pageObserver = new MutationObserver(() => {
     if (pageContent.classList.contains('clear')) {
-        triggerFadeIn();
-        fadeObserver.disconnect();
+        triggerFirstScreenFadeIn();
+        pageObserver.disconnect();
     }
 });
-fadeObserver.observe(pageContent, { attributes: true, attributeFilter: ['class'] });
-// 如果页面已经清晰（备用）
-if (pageContent.classList.contains('clear')) triggerFadeIn();
+pageObserver.observe(pageContent, { attributes: true, attributeFilter: ['class'] });
+
+// 备用：如果页面已经清晰
+if (pageContent.classList.contains('clear')) triggerFirstScreenFadeIn();
 
 // ========== 图片弹窗查看逻辑 ==========
 // 所有图片均可点击弹窗查看原图
