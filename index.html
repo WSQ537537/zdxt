@@ -57,6 +57,13 @@ body {
 .logo-text {
     display: flex;
     gap: 2px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.5s ease;
+}
+.logo-text.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 .logo-char {
     font-size: 28px;
@@ -66,20 +73,18 @@ body {
     background-clip: text;
     color: transparent;
     text-shadow: 0 0 30px rgba(59,130,246,0.3);
-    opacity: 0;
-    transform: translateY(-20px);
-    animation: charDrop 0.6s ease forwards;
 }
-.logo-char:nth-child(1) { animation-delay: 2.8s; }
-.logo-char:nth-child(2) { animation-delay: 2.9s; }
-.logo-char:nth-child(3) { animation-delay: 3.0s; }
-.logo-char:nth-child(4) { animation-delay: 3.1s; }
+.logo-text.bounce .logo-char {
+    animation: charBounce 0.4s ease forwards;
+}
+.logo-text.bounce .logo-char:nth-child(1) { animation-delay: 0s; }
+.logo-text.bounce .logo-char:nth-child(2) { animation-delay: 0.08s; }
+.logo-text.bounce .logo-char:nth-child(3) { animation-delay: 0.16s; }
+.logo-text.bounce .logo-char:nth-child(4) { animation-delay: 0.24s; }
 
-@keyframes charDrop {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes charBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
 }
 
 /* ========== Logo入场动画 - SVG矢量激光雕刻 ========== */
@@ -147,15 +152,19 @@ body {
     }
 }
 
-/* 页面从模糊透明变清晰 */
+/* 页面从模糊透明变清晰 - 更平滑的过渡 */
 .page-content {
-    filter: blur(10px);
+    filter: blur(8px);
     opacity: 0;
-    transition: filter 0.8s ease, opacity 0.8s ease;
+    transform: scale(0.98);
+    transition: filter 1s cubic-bezier(0.25, 0.1, 0.25, 1), 
+                opacity 1s cubic-bezier(0.25, 0.1, 0.25, 1),
+                transform 1s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 .page-content.clear {
     filter: blur(0);
     opacity: 1;
+    transform: scale(1);
 }
 
 /* 文字小幅跃动动画 */
@@ -217,7 +226,8 @@ body {
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 20px;
     padding: 20px 32px;
-    margin: 40px 0 0;
+    margin: 40px auto 0;
+    max-width: 1400px;
 }
 .download-banner-content {
     display: flex;
@@ -1653,12 +1663,13 @@ function initLogoAnimation() {
             pageContent.classList.add('clear');
         }, 300);
         
-        // 1.2s后：header logo显示
+        // 1.2s后：header logo显示，文字显示
         setTimeout(() => {
             headerLogoImg.classList.add('show');
+            logoText.classList.add('show');
         }, 1200);
         
-        // 1.5s后：Logo到位，文字开始跃动
+        // 1.5s后：文字开始跃动
         setTimeout(() => {
             logoText.classList.add('bounce');
         }, 1500);
@@ -1682,6 +1693,7 @@ function initLogoAnimation() {
         logoIntro.style.display = 'none';
         pageContent.classList.add('clear');
         headerLogoImg.classList.add('show');
+        logoText.classList.add('show');
         logoText.classList.add('bounce');
         downloadBtn.classList.add('show');
     }
