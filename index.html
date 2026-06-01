@@ -173,10 +173,10 @@ body {
     }
 }
 
-/* 页面初始完全不可见，LOGO缩小时同步渐显 */
+/* 页面初始模糊可见（雕刻期间就能看到），LOGO缩小时变清晰 */
 .page-content {
-    filter: blur(10px);
-    opacity: 0;
+    filter: blur(12px);
+    opacity: 0.5;
     transition: filter 1s ease-out, opacity 0.8s ease-out;
 }
 .page-content.clear {
