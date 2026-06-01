@@ -1680,10 +1680,12 @@ function initLogoAnimation() {
         // 开始飞入动画
         logoCanvas.classList.add('flying');
         
-        // 0.6s后：header logo显示
+        // 0.8s后：矢量Logo渐变成常态图标
         setTimeout(() => {
+            logoCanvas.style.opacity = '0';
+            logoCanvas.style.transition = 'opacity 0.3s ease';
             headerLogoImg.classList.add('show');
-        }, 600);
+        }, 800);
         
         // 1.0s后：文字显示并跃动
         setTimeout(() => {
@@ -1696,9 +1698,10 @@ function initLogoAnimation() {
             downloadBtn.classList.add('show');
         }, 1200);
         
-        // 1.5s后：开屏淡出
+        // 1.5s后：只淡出开屏背景，矢量层已隐藏
         setTimeout(() => {
-            logoIntro.classList.add('fade-out');
+            logoIntro.style.background = 'transparent';
+            logoIntro.style.pointerEvents = 'none';
             setTimeout(() => { 
                 logoIntro.style.display = 'none'; 
             }, 300);
