@@ -141,25 +141,32 @@ body {
 }
 .logo-final.show { 
     opacity: 1; 
-    animation: logoFlyToHeader 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    animation: logoFlyToHeader 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; 
     animation-delay: 0.1s; 
 }
 
-/* Logo从中心飞到左上角文字左侧的动画 */
+/* Logo从中心飞到左上角文字左侧的动画 - 放慢旋转，摆正正面 */
 @keyframes logoFlyToHeader {
     0% { 
-        transform: scale(1) rotateY(0deg) translate(0, 0);
+        transform: scale(1) rotateY(0deg);
         top: 50%;
         left: 50%;
         margin-left: -160px;
         margin-top: -160px;
     }
+    30% {
+        transform: scale(0.6) rotateY(180deg);
+    }
     60% {
-        transform: scale(0.4) rotateY(540deg) translate(-30vw, -40vh);
+        transform: scale(0.3) rotateY(360deg);
+        top: 30%;
+        left: 30%;
+    }
+    85% {
+        transform: scale(0.15) rotateY(450deg);
     }
     100% { 
-        transform: scale(0.125) rotateY(720deg) translate(0, 0);
-        /* 最终位置：header左上角，文字左侧 */
+        transform: scale(0.125) rotateY(360deg); /* 旋转360度摆正正面 */
         top: 12px;
         left: 48px;
         margin-left: 0;
@@ -169,7 +176,38 @@ body {
     }
 }
 
-.logo-intro.fade-out { animation: introFadeOut 0.4s ease forwards; }
+/* 页面从模糊透明变清晰 */
+.page-content {
+    filter: blur(10px);
+    opacity: 0;
+    transition: filter 0.8s ease, opacity 0.8s ease;
+}
+.page-content.clear {
+    filter: blur(0);
+    opacity: 1;
+}
+
+/* 文字小幅跃动动画 */
+.logo-text.bounce .logo-char {
+    animation: charBounce 0.5s ease forwards;
+}
+@keyframes charBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* 右上角下载按钮自下上浮 */
+.download-btn {
+    transform: translateY(30px);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.download-btn.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.logo-intro.fade-out { animation: introFadeOut 0.6s ease forwards; }
 @keyframes introFadeOut { to { opacity: 0; visibility: hidden; pointer-events: none; } }
 
 /* 旧logo样式保留 */
@@ -192,6 +230,80 @@ body {
 .download-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 .download-btn .btn-loading { animation: pulse 1.5s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+/* ========== 通栏长条下载区块 ========== */
+.download-banner {
+    background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15));
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 24px 48px;
+    margin-top: 40px;
+}
+.download-banner-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+.download-banner-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.download-banner-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    object-fit: cover;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.download-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.download-banner-title {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3b82f6, #a855f7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.download-banner-desc {
+    font-size: 15px;
+    color: #94a3b8;
+}
+.download-banner-btn {
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+.download-banner-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(59,130,246,0.45);
+}
+.download-banner-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+@media (max-width: 640px) {
+    .download-banner { padding: 20px 24px; }
+    .download-banner-icon { width: 48px; height: 48px; }
+    .download-banner-title { font-size: 18px; }
+    .download-banner-desc { font-size: 13px; }
+    .download-banner-btn { padding: 12px 24px; font-size: 15px; }
+}
 
 /* ========== 底部浮动下载按钮 ========== */
 .float-download-bar {
@@ -653,6 +765,9 @@ body {
 
 <body>
 <div class="hero-bg"></div>
+
+<!-- 页面内容容器 -->
+<div class="page-content" id="pageContent">
 
 <!-- Logo入场动画 - SVG矢量激光雕刻 -->
 <div class="logo-intro" id="logoIntro">
@@ -1680,23 +1795,35 @@ function initLogoAnimation() {
     }
     
     function finishAnimation() {
+        const pageContent = document.getElementById('pageContent');
+        const logoText = document.querySelector('.logo-text');
+        const downloadBtn = document.querySelector('.download-btn');
+        
         logoFinal.classList.add('show');
         
-        // 延迟显示header中的logo（等飞入动画快结束时）
+        // 1.2s后：页面开始从模糊变清晰
+        setTimeout(() => {
+            pageContent.classList.add('clear');
+        }, 1200);
+        
+        // 1.4s后：header logo显示，文字跃动
         setTimeout(() => {
             headerLogoImg.classList.add('show');
-        }, 700);
+            logoText.classList.add('bounce');
+        }, 1400);
         
-        // 等飞入动画完成后淡出
+        // 1.6s后：下载按钮上浮出现
+        setTimeout(() => {
+            downloadBtn.classList.add('show');
+        }, 1600);
+        
+        // 1.8s后：入场动画淡出
         setTimeout(() => {
             logoIntro.classList.add('fade-out');
             setTimeout(() => { 
                 logoIntro.style.display = 'none'; 
-                // 确保header logo显示
-                headerLogoImg.style.opacity = '1';
-                headerLogoImg.style.transform = 'scale(1)';
-            }, 400);
-        }, 950);
+            }, 600);
+        }, 1800);
     }
 }
 
@@ -1837,6 +1964,25 @@ document.addEventListener('mousemove', e => {
     requestAnimationFrame(animate);
 })();
 </script>
+
+<!-- 通栏长条下载区块 -->
+<div class="download-banner" id="downloadBanner">
+    <div class="download-banner-content">
+        <div class="download-banner-info">
+            <img src="images/logo-source.jpg" alt="智答星途" class="download-banner-icon">
+            <div class="download-banner-text">
+                <span class="download-banner-title">智答星途</span>
+                <span class="download-banner-desc">安卓手机端下载</span>
+            </div>
+        </div>
+        <button class="download-banner-btn" onclick="startDownload()">
+            <span class="btn-text">📥 立即下载</span>
+            <span class="btn-loading" style="display:none;">⚡ 加速中...</span>
+        </button>
+    </div>
+</div>
+
+</div><!-- /page-content -->
 
 <!-- 底部浮动下载按钮 -->
 <div class="float-download-bar" id="floatDownloadBar">
