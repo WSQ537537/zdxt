@@ -121,14 +121,17 @@ body {
 
 /* 雕刻完成后的Logo - 用于飞入动画 */
 .logo-final { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
+    position: fixed; 
+    top: 50%;
+    left: 50%;
+    width: 300px; 
+    height: 300px; 
+    margin-left: -150px;
+    margin-top: -150px;
     opacity: 0; 
     border-radius: 30px; 
     overflow: hidden;
+    z-index: 100001;
 }
 .logo-final-img { 
     width: 100%; 
@@ -138,34 +141,26 @@ body {
 }
 .logo-final.show { 
     opacity: 1; 
-    animation: logoFlyToHeader 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; 
+    animation: logoFlyToHeader 1.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; 
     animation-delay: 0.1s; 
 }
 
 /* Logo从中心飞到左上角文字左侧的动画 - 放慢旋转，摆正正面 */
 @keyframes logoFlyToHeader {
     0% { 
-        transform: scale(1) rotateY(0deg);
-        top: 50%;
-        left: 50%;
-        margin-left: -150px;
-        margin-top: -150px;
-        width: 300px;
-        height: 300px;
+        transform: translate(-50%, -50%) scale(1) rotateY(0deg);
     }
-    30% {
-        transform: scale(0.6) rotateY(180deg);
+    25% {
+        transform: translate(-50%, -50%) scale(0.7) rotateY(180deg);
     }
-    60% {
-        transform: scale(0.3) rotateY(360deg);
-        top: 30%;
-        left: 30%;
+    50% {
+        transform: translate(-40%, -40%) scale(0.4) rotateY(360deg);
     }
-    85% {
-        transform: scale(0.15) rotateY(540deg);
+    75% {
+        transform: translate(-20%, -20%) scale(0.2) rotateY(540deg);
     }
     100% { 
-        transform: scale(0.133) rotateY(720deg);
+        transform: translate(0, 0) scale(0.133) rotateY(720deg);
         top: 12px;
         left: 48px;
         margin-left: 0;
@@ -697,10 +692,7 @@ body {
 <body>
 <div class="hero-bg"></div>
 
-<!-- 页面内容容器 -->
-<div class="page-content" id="pageContent">
-
-<!-- Logo入场动画 - SVG矢量激光雕刻 -->
+<!-- Logo入场动画 - SVG矢量激光雕刻（必须在page-content外） -->
 <div class="logo-intro" id="logoIntro">
     <div class="logo-canvas-container" id="logoCanvasContainer">
         <div class="logo-carving-stage" id="logoCarvingStage">
@@ -729,6 +721,9 @@ body {
         </div>
     </div>
 </div>
+
+<!-- 页面内容容器 -->
+<div class="page-content" id="pageContent">
 
 <div class="header">
     <div class="logo-container">
@@ -1682,29 +1677,35 @@ function initLogoAnimation() {
     function finishAnimation() {
         logoFinal.classList.add('show');
         
-        // 1.2s后：页面变清晰
+        // Logo飞入动画1.8s，在动画中后期触发其他效果
+        
+        // 1.0s后：页面开始变清晰（飞入过程中）
         setTimeout(() => {
             pageContent.classList.add('clear');
-        }, 1200);
+        }, 1000);
         
-        // 1.4s后：header logo显示，文字跃动
+        // 1.5s后：header logo显示
         setTimeout(() => {
             headerLogoImg.classList.add('show');
-            logoText.classList.add('bounce');
-        }, 1400);
+        }, 1500);
         
-        // 1.6s后：下载按钮上浮
+        // 1.8s后：Logo到位，文字开始跃动
+        setTimeout(() => {
+            logoText.classList.add('bounce');
+        }, 1800);
+        
+        // 2.2s后：下载按钮上浮
         setTimeout(() => {
             downloadBtn.classList.add('show');
-        }, 1600);
+        }, 2200);
         
-        // 1.8s后：开屏淡出
+        // 2.8s后：开屏淡出
         setTimeout(() => {
             logoIntro.classList.add('fade-out');
             setTimeout(() => { 
                 logoIntro.style.display = 'none'; 
             }, 600);
-        }, 1800);
+        }, 2800);
     }
 }
 
