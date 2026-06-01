@@ -100,6 +100,11 @@ body {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     display: flex; align-items: center; justify-content: center;
     z-index: 100000; background: #060b18;
+    transition: opacity 0.5s ease;
+}
+.logo-intro.page-visible {
+    opacity: 0;
+    pointer-events: none;
 }
 .logo-canvas-container { 
     position: fixed;
@@ -694,29 +699,30 @@ body {
 <body>
 <div class="hero-bg"></div>
 
-<!-- Logo入场动画 - SVG矢量激光雕刻（必须在page-content外） -->
-<div class="logo-intro" id="logoIntro">
-    <div class="logo-canvas-container" id="logoCanvasContainer">
-        <svg class="logo-engrave-svg" viewBox="0 0 1280 1280" id="logoSvg" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <filter id="laserGlow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="6" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-                <clipPath id="roundClip">
-                    <rect x="60" y="60" width="1160" height="1160" rx="60" ry="60"/>
-                </clipPath>
-            </defs>
-            <g clip-path="url(#roundClip)">
-                <rect x="0" y="0" width="1280" height="1280" fill="#0a0e2a" rx="60"/>
-                <!-- 矢量路径将由JS动态注入 -->
-            </g>
-            <!-- 激光点 -->
-            <circle class="laser-dot" cx="640" cy="640" r="8" fill="#00ffff" filter="url(#laserGlow)" opacity="0"/>
-            <!-- 火花 -->
-            <g class="sparks"></g>
-        </svg>
-    </div>
+<!-- Logo入场动画 - 遮罩层（纯背景，不含SVG） -->
+<div class="logo-intro" id="logoIntro"></div>
+
+<!-- SVG矢量LOGO容器（独立于遮罩，雕刻期间可见） -->
+<div class="logo-canvas-container" id="logoCanvasContainer">
+    <svg class="logo-engrave-svg" viewBox="0 0 1280 1280" id="logoSvg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="laserGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <clipPath id="roundClip">
+                <rect x="60" y="60" width="1160" height="1160" rx="60" ry="60"/>
+            </clipPath>
+        </defs>
+        <g clip-path="url(#roundClip)">
+            <rect x="0" y="0" width="1280" height="1280" fill="#0a0e2a" rx="60"/>
+            <!-- 矢量路径将由JS动态注入 -->
+        </g>
+        <!-- 激光点 -->
+        <circle class="laser-dot" cx="640" cy="640" r="8" fill="#00ffff" filter="url(#laserGlow)" opacity="0"/>
+        <!-- 火花 -->
+        <g class="sparks"></g>
+    </svg>
 </div>
 
 <!-- 顶部导航栏 - 独立分区 -->
@@ -1616,6 +1622,9 @@ function initLogoAnimation() {
                 clipGroup.appendChild(clone);
             });
             
+            // 雕刻开始：遮罩变透明，露出页面内容
+            logoIntro.classList.add('page-visible');
+            
             // 雕刻（放慢速度）
             const pathElements = clipGroup.querySelectorAll('.engrave-path');
             const total = pathElements.length;
@@ -1644,7 +1653,10 @@ function initLogoAnimation() {
                 setTimeout(carveBatch, 60);
             })();
         })
-        .catch(() => startFlyAnimation());
+        .catch(() => {
+            logoIntro.classList.add('page-visible');
+            startFlyAnimation();
+        });
     
     // 飞入动画：LOGO开始缩小 = 页面同步渐显
     // 渐显全程隐藏header，LOGO到位后才触发
