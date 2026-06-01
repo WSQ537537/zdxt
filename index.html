@@ -33,7 +33,7 @@ body {
     background: rgba(10, 14, 42, 0.98);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.15);
     z-index: 9999;
     /* 初始隐藏，LOGO到位后显示 */
     opacity: 0;
@@ -1664,6 +1664,8 @@ function initLogoAnimation() {
         setTimeout(() => {
             const header = document.querySelector('.header');
             header.classList.add('show');
+            // 常态图标显示
+            headerLogoImg.classList.add('show');
             // 文字跃动
             logoText.classList.add('show');
             logoText.classList.add('bounce');
