@@ -441,14 +441,9 @@ body {
 /* ========== 卡片容器与轨道 ========== */
 .cards-container {
     position: relative;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    overflow: hidden;
     border-radius: 12px;
-    scroll-snap-type: x mandatory;
 }
-.cards-container::-webkit-scrollbar { display: none; }
 .cards-track {
     display: flex;
     gap: 16px;
@@ -469,8 +464,6 @@ body {
     display: flex;
     flex-direction: column;
     cursor: pointer;
-    /* 滚动吸附居中 */
-    scroll-snap-align: center;
 }
 .card-fixed:hover {
     transform: translateY(-6px);
@@ -591,8 +584,17 @@ body {
         max-width: 100%;
         min-width: auto;
     }
-    .card-fixed { width: 260px; height: 380px; flex-shrink: 0; }
+    .card-fixed { width: 260px; height: 380px; flex-shrink: 0; scroll-snap-align: center; }
     .card-img-wrap { height: 200px; }
+    /* 移动端卡片横向滚动 */
+    .cards-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+    }
+    .cards-container::-webkit-scrollbar { display: none; }
     /* 小屏幕弹窗调整 */
     .image-modal { padding: 60px 16px; }
     .image-modal img { max-width: 100%; }
