@@ -193,6 +193,85 @@ body {
 .download-btn .btn-loading { animation: pulse 1.5s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
+/* ========== 底部浮动下载按钮 ========== */
+.float-download-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(6, 11, 24, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 24px;
+    z-index: 9998;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.float-download-bar.show {
+    transform: translateY(0);
+}
+.float-download-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+.float-download-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.float-download-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+.float-download-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.float-download-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+}
+.float-download-desc {
+    font-size: 13px;
+    color: #94a3b8;
+}
+.float-download-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+.float-download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+.float-download-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+@media (max-width: 640px) {
+    .float-download-bar { padding: 10px 16px; }
+    .float-download-icon { width: 40px; height: 40px; }
+    .float-download-title { font-size: 15px; }
+    .float-download-desc { display: none; }
+    .float-download-btn { padding: 10px 20px; font-size: 14px; }
+}
+
 .section { min-height: 100vh; padding: 120px 24px 60px; max-width: 1400px; margin: 0 auto; }
 .heading {
     font-size: 44px; font-weight: 900;
@@ -1303,9 +1382,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // 图片懒加载和加载优化
     initImageLoading();
     
-    // Logo动画完成后显示header中的logo
+    // Logo矢量激光雕刻动画
     initLogoAnimation();
+    
+    // 底部浮动下载按钮滚动监听
+    initFloatDownloadBar();
 });
+
+// ========== 底部浮动下载按钮 ==========
+function initFloatDownloadBar() {
+    const floatBar = document.getElementById('floatDownloadBar');
+    if (!floatBar) return;
+    
+    // 滚动到底部时显示
+    function checkScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = window.innerHeight;
+        
+        // 距离底部100px时显示
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+        
+        if (isNearBottom) {
+            floatBar.classList.add('show');
+        } else {
+            floatBar.classList.remove('show');
+        }
+    }
+    
+    // 节流处理滚动事件
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                checkScroll();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+    
+    // 初始检查
+    checkScroll();
+}
 
 // ========== 智能加速下载功能 ==========
 const DOWNLOAD_CONFIG = {
@@ -1718,5 +1837,23 @@ document.addEventListener('mousemove', e => {
     requestAnimationFrame(animate);
 })();
 </script>
+
+<!-- 底部浮动下载按钮 -->
+<div class="float-download-bar" id="floatDownloadBar">
+    <div class="float-download-content">
+        <div class="float-download-info">
+            <img src="images/logo-source.jpg" alt="智答星途" class="float-download-icon">
+            <div class="float-download-text">
+                <span class="float-download-title">智答星途</span>
+                <span class="float-download-desc">一体化智慧教育平台</span>
+            </div>
+        </div>
+        <button class="float-download-btn" onclick="startDownload()">
+            <span class="btn-text">📥 立即下载</span>
+            <span class="btn-loading" style="display:none;">⚡ 加速中...</span>
+        </button>
+    </div>
+</div>
+
 </body>
 </html>
