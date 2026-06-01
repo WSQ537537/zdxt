@@ -1581,15 +1581,10 @@ function initLogoAnimation() {
     const logoText = document.querySelector('.logo-text');
     const downloadBtn = document.querySelector('.download-btn');
     
-    // 立刻显示页面（不等待任何动画）
+    // 第1步：页面立即显示（0延迟）
     pageContent.classList.add('clear');
     
-    // 设置总动画时间上限（3秒后强制结束）
-    const maxTime = setTimeout(() => {
-        finishAnimation();
-    }, 3000);
-    
-    // 加载矢量SVG路径
+    // 第2步：加载并雕刻（页面已在显示）
     fetch('images/logo-vector.svg')
         .then(r => r.text())
         .then(svgText => {
@@ -1598,11 +1593,11 @@ function initLogoAnimation() {
             const paths = svgDoc.querySelectorAll('.engrave-path');
             
             if (paths.length === 0) {
-                finishAnimation();
+                startFlyAnimation();
                 return;
             }
             
-            // 将路径注入到SVG中
+            // 注入路径
             paths.forEach(p => {
                 const clone = svgEl.ownerDocument.importNode(p, true);
                 const len = clone.getTotalLength ? clone.getTotalLength() : 500;
@@ -1616,95 +1611,73 @@ function initLogoAnimation() {
                 clipGroup.appendChild(clone);
             });
             
-            startCarving(clipGroup.querySelectorAll('.engrave-path'));
-        })
-        .catch(() => finishAnimation());
-    
-    function startCarving(pathElements) {
-        const total = pathElements.length;
-        const batchSize = Math.max(5, Math.ceil(total / 8));
-        let currentIdx = 0;
-        
-        laserDot.style.opacity = '1';
-        
-        function carveBatch() {
-            if (currentIdx >= total) {
-                laserDot.style.opacity = '0';
-                setTimeout(finishAnimation, 100);
-                return;
+            // 开始雕刻
+            const pathElements = clipGroup.querySelectorAll('.engrave-path');
+            const total = pathElements.length;
+            const batchSize = Math.max(5, Math.ceil(total / 6));
+            let currentIdx = 0;
+            
+            laserDot.style.opacity = '1';
+            
+            function carveBatch() {
+                if (currentIdx >= total) {
+                    laserDot.style.opacity = '0';
+                    // 雕刻完成，开始飞入
+                    setTimeout(startFlyAnimation, 100);
+                    return;
+                }
+                
+                const batch = Array.from(pathElements).slice(currentIdx, currentIdx + batchSize);
+                batch.forEach((path, i) => {
+                    setTimeout(() => {
+                        path.style.opacity = '1';
+                        path.classList.add('carved');
+                        try {
+                            const bbox = path.getBBox();
+                            laserDot.setAttribute('cx', bbox.x + bbox.width / 2);
+                            laserDot.setAttribute('cy', bbox.y + bbox.height / 2);
+                        } catch(e) {}
+                    }, i * 8);
+                });
+                
+                currentIdx += batchSize;
+                setTimeout(carveBatch, 35);
             }
             
-            const batch = Array.from(pathElements).slice(currentIdx, currentIdx + batchSize);
-            
-            batch.forEach((path, i) => {
-                setTimeout(() => {
-                    path.style.opacity = '1';
-                    path.classList.add('carved');
-                    
-                    try {
-                        const bbox = path.getBBox();
-                        const cx = bbox.x + bbox.width / 2;
-                        const cy = bbox.y + bbox.height / 2;
-                        laserDot.setAttribute('cx', cx);
-                        laserDot.setAttribute('cy', cy);
-                        if (Math.random() > 0.5) createSpark(cx, cy);
-                    } catch(e) {}
-                }, i * 10);
-            });
-            
-            currentIdx += batchSize;
-            setTimeout(carveBatch, 40);
-        }
-        
-        carveBatch();
-    }
+            carveBatch();
+        })
+        .catch(() => startFlyAnimation());
     
-    function createSpark(x, y) {
-        const sparksGroup = svgEl.querySelector('.sparks');
-        const spark = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        spark.setAttribute('cx', x + (Math.random() - 0.5) * 40);
-        spark.setAttribute('cy', y + (Math.random() - 0.5) * 40);
-        spark.setAttribute('r', Math.random() * 2 + 1);
-        spark.setAttribute('class', 'spark');
-        spark.style.opacity = '1';
-        sparksGroup.appendChild(spark);
-        setTimeout(() => {
-            spark.style.opacity = '0';
-            setTimeout(() => spark.remove(), 100);
-        }, 50);
-    }
-    
-    function finishAnimation() {
-        clearTimeout(maxTime);
-        
-        // 开始飞入动画
+    // 第3步：飞入动画（矢量Logo旋转到左上角）
+    function startFlyAnimation() {
+        // 开始飞入
         logoCanvas.classList.add('flying');
         
-        // 0.8s后：矢量Logo渐变成常态图标
+        // 0.8s：矢量渐隐，常态图标显示（交叉过渡）
         setTimeout(() => {
+            logoCanvas.style.transition = 'opacity 0.4s ease';
             logoCanvas.style.opacity = '0';
-            logoCanvas.style.transition = 'opacity 0.3s ease';
             headerLogoImg.classList.add('show');
         }, 800);
         
-        // 1.0s后：文字显示并跃动
+        // 1.0s：文字显示并跃动
         setTimeout(() => {
             logoText.classList.add('show');
             logoText.classList.add('bounce');
         }, 1000);
         
-        // 1.2s后：下载按钮上浮
+        // 1.2s：下载按钮上浮
         setTimeout(() => {
             downloadBtn.classList.add('show');
         }, 1200);
         
-        // 1.5s后：只淡出开屏背景，矢量层已隐藏
+        // 1.5s：开屏层淡出
         setTimeout(() => {
-            logoIntro.style.background = 'transparent';
-            logoIntro.style.pointerEvents = 'none';
+            logoIntro.style.transition = 'opacity 0.4s ease';
+            logoIntro.style.opacity = '0';
             setTimeout(() => { 
                 logoIntro.style.display = 'none'; 
-            }, 300);
+            }, 400);
         }, 1500);
     }
 }
