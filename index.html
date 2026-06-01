@@ -792,11 +792,11 @@ body {
                             <div class="card-content"><h3>📋 测试管理</h3><p>展示全部已发布试卷列表，标注试卷科目、时间、计时方式、开放/结束状态。</p></div>
                         </div>
                         <div class="card-fixed" onclick="toggleExpand(this)">
-                            <div class="card-img-wrap long-img" data-long="true"><img src="images/admin_create_exam.jpg" alt="AI出题"><span class="expand-hint">点击弹窗查看全图</span></div>
+                            <div class="card-img-wrap long-img"><img src="images/admin_create_exam.jpg" alt="AI出题"></div>
                             <div class="card-content"><h3>🤖 AI出题发布</h3><p>支持AI出题方式，可配置科目、试卷名称、考试类型、起止时间、计时模式。</p></div>
                         </div>
                         <div class="card-fixed" onclick="toggleExpand(this)">
-                            <div class="card-img-wrap long-img" data-long="true"><img src="images/admin_import_exam.jpg" alt="导入出题"><span class="expand-hint">点击弹窗查看全图</span></div>
+                            <div class="card-img-wrap long-img"><img src="images/admin_import_exam.jpg" alt="导入出题"></div>
                             <div class="card-content"><h3>📥 导入出题</h3><p>支持粘贴试卷内容并解析导入，快速创建试卷。</p></div>
                         </div>
                         <div class="card-fixed" onclick="toggleExpand(this)">
@@ -1271,10 +1271,10 @@ const ob = new IntersectionObserver(e=>e.forEach(i=>i.target.classList.toggle('v
 els.forEach(e=>ob.observe(e));
 
 // ========== 图片弹窗查看逻辑 ==========
-// 超长图点击弹窗全屏展示原图，不在原卡片内展开
+// 所有图片均可点击弹窗查看原图
 function toggleExpand(card) {
     const imgWrap = card.querySelector('.card-img-wrap');
-    if (imgWrap && imgWrap.dataset.long === 'true') {
+    if (imgWrap) {
         const img = imgWrap.querySelector('img');
         if (img) {
             const modal = document.getElementById('imageModal');
