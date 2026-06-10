@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智答星途 - 一体化智慧教育平台</title>
+<link rel="preload" href="images/logo-vector.svg" as="fetch" crossorigin>
+<link rel="preconnect" href="https://github.com" crossorigin>
+<link rel="preconnect" href="https://ghproxy.com" crossorigin>
+<style>
+/* ========== 设计令牌 - CSS变量系统 ========== */
+:root {
+    /* 品牌色 */
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --cyan: #06b6d4;
+    --brand-gradient: linear-gradient(135deg, var(--blue), var(--purple), var(--pink));
+    --brand-gradient-btn: linear-gradient(135deg, var(--blue), #8b5cf6);
+    
+    /* 背景色 */
+    --bg-deep: #060b18;
+    --bg-nav: rgba(10, 14, 42, 0.98);
+    --bg-card: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    --bg-card-hover: linear-gradient(145deg, rgba(59,130,246,0.12), rgba(139,92,246,0.08));
+    
+    /* 文字色 */
+    --text-primary: #fff;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-accent: #93c5fd;
+    
+    /* 边框 */
+    --border-subtle: rgba(255,255,255,0.08);
+    --border-light: rgba(255,255,255,0.15);
+    --border-accent: rgba(59,130,246,0.35);
+    
+    /* 阴影 */
+    --shadow-card: 0 2px 16px rgba(0,0,0,0.2), 0 0 1px rgba(255,255,255,0.05);
+    --shadow-card-hover: 0 8px 32px rgba(59,130,246,0.12), 0 0 1px rgba(255,255,255,0.1);
+    --shadow-btn: 0 4px 16px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    --shadow-btn-hover: 0 8px 28px rgba(59,130,246,0.45);
+    
+    /* 圆角 */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    
+    /* 间距 */
+    --gap: 16px;
+    --section-pad: 120px 24px 60px;
+    
+    /* 过渡 */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+.hero-bg {
+    position: fixed; inset: 0;
+    background: 
+        radial-gradient(ellipse 60% 50% at 15% 20%, rgba(59,130,246,0.1), transparent),
+        radial-gradient(ellipse 50% 60% at 85% 75%, rgba(139,92,246,0.08), transparent),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(236,72,153,0.04), transparent);
+    z-index: -1;
+    will-change: transform;
+    animation: flow 20s infinite alternate ease-in-out;
+}
+@keyframes flow { 0% { transform: scale(1); } 100% { transform: scale(1.08) rotate(1deg); } }
+
+/* 顶部导航栏 - 独立分区，与主体分隔 */
+.header {
+    position: fixed; top: 0; left: 0; width: 100%;
+    padding: 12px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(10, 14, 42, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    z-index: 9999;
+    /* 初始隐藏，LOGO到位后显示（用visibility不影响子元素动画） */
+    visibility: hidden;
+}
+.header.show {
+    visibility: visible;
+}
+
+/* ========== Logo艺术字 ========== */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.logo-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+.logo-img.show {
+    opacity: 1;
+    transform: scale(1);
+}
+.logo-text {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.logo-text.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.logo-char {
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #3b82f6 0%, #a855f7 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* ========== Logo入场动画 - SVG矢量激光雕刻 ========== */
+/* 文字跃动动画 - 更流畅 */
+.logo-intro {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100000; background: #060b18;
+    transition: opacity 0.5s ease;
+}
+.logo-intro.page-visible {
+    opacity: 0;
+    pointer-events: none;
+}
+.logo-canvas-container { 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px; 
+    height: 300px;
+    transform: translate(calc(50vw - 150px), calc(50vh - 150px)) scale(1);
+    will-change: transform, opacity;
+    z-index: 100001;
+}
+.logo-canvas-container.flying {
+    animation: logoFlyToHeader 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+.logo-engrave-svg { 
+    width: 100%; 
+    height: 100%; 
+    border-radius: 30px;
+}
+.logo-engrave-svg .engrave-path { 
+    stroke-dasharray: var(--len); 
+    stroke-dashoffset: var(--len);
+    transition: stroke-dashoffset 0.25s ease, opacity 0.25s ease;
+}
+.logo-engrave-svg .engrave-path.carved { 
+    opacity: 1 !important; 
+    stroke-dashoffset: 0 !important;
+}
+.laser-dot { filter: drop-shadow(0 0 12px #00ffff) drop-shadow(0 0 24px #00ffff); }
+.spark { fill: #00ffff; filter: drop-shadow(0 0 4px #00ffff); }
+
+/* Logo从中心飞到左上角 - 纯transform，零回流 */
+@keyframes logoFlyToHeader {
+    0% { 
+        transform: translate(calc(50vw - 150px), calc(50vh - 150px)) scale(1) rotateY(0deg);
+        opacity: 1;
+    }
+    30% {
+        transform: translate(calc(50vw - 150px), calc(50vh - 150px)) scale(0.6) rotateY(180deg);
+        opacity: 1;
+    }
+    60% {
+        transform: translate(calc(50vw - 150px), calc(50vh - 150px)) scale(0.3) rotateY(360deg);
+        opacity: 1;
+    }
+    80% {
+        transform: translate(52px, 12px) scale(0.12) rotateY(360deg);
+        opacity: 0.8;
+    }
+    100% { 
+        transform: translate(52px, 12px) scale(0.12) rotateY(360deg);
+        opacity: 0;
+    }
+}
+
+/* 页面初始半透明，LOGO缩小时变清晰（无blur，性能流畅） */
+.page-content {
+    opacity: 0.3;
+    transition: opacity 0.8s ease-out;
+}
+.page-content.clear {
+    opacity: 1;
+}
+
+/* 文字跃动动画 - 更流畅 */
+.logo-text.bounce .logo-char {
+    animation: charBounce 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes charBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* 右上角下载按钮 - 初始隐藏，上浮出现 */
+.download-btn {
+    padding: 11px 28px;
+    background: var(--brand-gradient-btn);
+    color: var(--text-primary); border-radius: var(--radius-md); text-decoration: none;
+    font-weight: 600; font-size: 15px;
+    box-shadow: var(--shadow-btn);
+    border: none;
+    cursor: pointer;
+    /* 初始状态：下移隐藏 */
+    transform: translateY(30px);
+    opacity: 0;
+    transition: transform 0.5s var(--ease-out-expo), 
+                opacity 0.5s var(--ease-out-expo),
+                box-shadow 0.3s, background 0.3s;
+}
+.download-btn.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+.download-btn:hover { 
+    transform: translateY(-2px); 
+    box-shadow: var(--shadow-btn-hover); 
+}
+.download-btn.show:hover {
+    transform: translateY(-2px);
+    opacity: 1;
+}
+.download-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
+.download-btn .btn-loading { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+.logo-intro.fade-out { animation: introFadeOut 0.6s ease forwards; }
+@keyframes introFadeOut { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+
+/* ========== 通栏长条下载区块 ========== */
+.download-banner {
+    background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15));
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 20px 32px;
+    margin: 40px auto 0;
+    max-width: 1200px;
+}
+.download-banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+.download-banner-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.download-banner-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    object-fit: cover;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.download-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.download-banner-title {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3b82f6, #a855f7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.download-banner-desc {
+    font-size: 15px;
+    color: #94a3b8;
+}
+.download-banner-btn {
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    white-space: nowrap;
+}
+.download-banner-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(59,130,246,0.45);
+}
+.download-banner-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+@media (max-width: 640px) {
+    .download-banner { padding: 16px 20px; margin: 32px 0 0; }
+    .download-banner-icon { width: 44px; height: 44px; }
+    .download-banner-title { font-size: 16px; }
+    .download-banner-desc { font-size: 12px; }
+    .download-banner-btn { padding: 10px 20px; font-size: 14px; }
+}
+
+
+
+.section { min-height: 100vh; padding: var(--section-pad); max-width: 1400px; margin: 0 auto; position: relative; }
+/* section间渐变分隔线 */
+.section::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.15), rgba(139,92,246,0.15), transparent);
+}
+.section:last-of-type::after { display: none; }
+.heading {
+    font-size: 44px; font-weight: 900;
+    background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 28px; letter-spacing: 1px;
+}
+.warn {
+    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.06));
+    border-left: 4px solid #f59e0b; padding: 16px 24px; border-radius: 12px;
+    color: #fcd34d; margin-bottom: 32px; font-size: 15px;
+}
+.card-large {
+    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl); padding: 36px 40px; margin-bottom: 36px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+}
+/* 大卡片顶部装饰线 */
+.card-large::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blue), var(--purple), var(--pink));
+    opacity: 0.4;
+}
+.card-large h2 { font-size: 26px; margin-bottom: 16px; color: #f1f5f9; font-weight: 700; }
+.card-large > p { color: var(--text-secondary); font-size: 15px; line-height: 1.85; margin-bottom: 24px; }
+
+/* ========== 一行多模块自适应布局 ========== */
+/* 规则：单行最多4卡，先完整展示前一模块，剩余宽度够才同行摆放 */
+.module-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap; /* 允许换行 */
+    width: 100%;
+}
+
+/* 默认模块样式 */
+.module-row .module-item {
+    flex: 0 0 auto; /* 不自动伸缩 */
+    min-width: auto;
+}
+
+/* 根据卡片数量计算模块宽度 */
+/* 1卡模块 = 280px */
+.module-row .module-item[data-module="admin-profile"],
+.module-row .module-item[data-module="admin-checkin"],
+.module-row .module-item[data-module="student-profile"],
+.module-row .module-item[data-module="parent-profile"] {
+    width: calc(280px + 32px); /* 卡片宽度 + padding */
+}
+
+/* 2卡模块 = 576px (280*2 + 16间隙) */
+.module-row .module-item:has(.card-fixed:nth-child(2)):not(:has(.card-fixed:nth-child(3))) {
+    width: calc(576px + 32px);
+}
+
+/* 3卡模块 = 872px (280*3 + 16*2间隙) */
+.module-row .module-item:has(.card-fixed:nth-child(3)) {
+    width: calc(872px + 32px);
+}
+
+/* 4卡及以上模块 = 100% */
+.module-row .module-item:has(.card-fixed:nth-child(4)) {
+    width: 100%;
+}
+
+/* 学习模块(3卡)独占一行 */
+.module-row:has(.module-item[data-module="admin-study"]) {
+    flex-wrap: wrap;
+}
+.module-row:has(.module-item[data-module="admin-study"]) .module-item[data-module="admin-study"] {
+    width: 100%;
+}
+
+/* AI助手和通知模块换行 */
+.module-row:has(.module-item[data-module="admin-ai"]) {
+    flex-wrap: wrap;
+}
+.module-row:has(.module-item[data-module="admin-ai"]) .module-item[data-module="admin-ai"],
+.module-row:has(.module-item[data-module="admin-ai"]) .module-item[data-module="admin-notice"] {
+    width: calc(872px + 32px);
+}
+
+/* 模块头部 */
+.module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    min-height: 36px;
+}
+.module-title {
+    font-size: 16px;
+    color: #60a5fa;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ========== 箭头按钮 - 加大醒目 ========== */
+.nav-arrows {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.nav-arrow {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(139,92,246,0.25));
+    border: 1.5px solid rgba(59,130,246,0.4);
+    color: #93c5fd;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: none; /* 默认隐藏 */
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                background 0.3s ease, 
+                border-color 0.3s ease;
+    line-height: 1;
+}
+.nav-arrow.show { display: flex; }
+.nav-arrow:hover {
+    background: linear-gradient(135deg, rgba(59,130,246,0.5), rgba(139,92,246,0.5));
+    transform: scale(1.15);
+    border-color: rgba(59,130,246,0.6);
+    box-shadow: 0 0 16px rgba(59,130,246,0.4);
+}
+
+/* ========== 卡片容器与轨道 ========== */
+.cards-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+.cards-track {
+    display: flex;
+    gap: var(--gap);
+    max-width: 100%;
+    transition: transform 0.5s var(--ease-smooth);
+    will-change: transform;
+}
+
+/* ========== 固定尺寸卡片 ========== */
+.card-fixed {
+    width: 280px;
+    height: 420px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    flex-shrink: 0;
+    transition: transform 0.4s var(--ease-out-expo), 
+                background 0.3s ease, 
+                border-color 0.3s ease,
+                box-shadow 0.4s ease;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+/* 卡片顶部光泽线 */
+.card-fixed::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.card-fixed:hover::before {
+    opacity: 1;
+}
+.card-fixed:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: var(--bg-card-hover);
+    border-color: var(--border-accent);
+    box-shadow: var(--shadow-card-hover);
+}
+
+/* 图片容器 - 放大至适中尺寸，图片居中显示 */
+.card-img-wrap {
+    width: 100%; height: 240px;
+    border-radius: 12px; overflow: hidden;
+    position: relative; flex-shrink: 0;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.15);
+}
+.card-img-wrap img { 
+    max-width: 100%; 
+    max-height: 100%; 
+    object-fit: contain;
+    display: block; 
+    transition: transform 0.4s ease, opacity 0.3s ease; 
+    opacity: 0;
+}
+.card-img-wrap img.loaded {
+    opacity: 1;
+}
+.card-img-wrap.short-img img { 
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; 
+}
+.card-img-wrap.long-img::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(transparent, rgba(6,11,24,0.95));
+    pointer-events: none;
+}
+.expand-hint {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #cbd5e1;
+    background: rgba(59,130,246,0.7); padding: 4px 14px; border-radius: 12px;
+    z-index: 2; transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+.card-img-wrap.long-img:hover .expand-hint {
+    background: rgba(59,130,246,0.9);
+}
+
+/* 卡片内容 */
+.card-content {
+    flex: 1; display: flex; flex-direction: column;
+    justify-content: flex-end; min-height: 0;
+}
+.card-content h3 { font-size: 15px; margin-bottom: 6px; color: #93c5fd; font-weight: 600; }
+.card-content p, .card-content li { color: #94a3b8; font-size: 12px; line-height: 1.6; }
+.card-content ul { margin-left: 14px; margin-top: 4px; }
+.card-content li { margin-bottom: 2px; }
+
+/* 角色标签 */
+.role-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 10px; font-weight: 600; margin-bottom: 6px;
+}
+.role-admin { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+.role-student { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+.role-parent { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.2); }
+.role-all { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+
+/* 滚动动画 - 更流畅的渐入效果 */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+    transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* 滚动引导蒙版 */
+.scroll-hint {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(59,130,246,0.9), rgba(139,92,246,0.9));
+    padding: 12px 28px; border-radius: 30px;
+    font-size: 14px; font-weight: 500; color: #fff;
+    z-index: 9997; opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+    box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+    display: flex; align-items: center; gap: 8px;
+}
+.scroll-hint.show { opacity: 1; }
+.scroll-hint::after { content: '↓'; animation: bounce 1.5s infinite; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+/* 适配 */
+@media (max-width:1200px) {
+    .module-row { flex-wrap: wrap; }
+    .module-row .module-item { 
+        flex: 1 1 calc(50% - 8px) !important; 
+        max-width: calc(50% - 8px);
+        min-width: 280px;
+    }
+}
+@media (max-width:768px) {
+    .heading { font-size: 28px; }
+    .logo { font-size: 22px; }
+    .header { padding: 14px 20px; }
+    .section { padding: 110px 16px 40px; }
+    .card-large { padding: 20px; border-radius: 16px; }
+    .module-row { 
+        flex-direction: row; 
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .module-row .module-item { 
+        flex: 0 0 auto !important; 
+        width: 100% !important;
+        max-width: 100%;
+        min-width: auto;
+    }
+    .card-fixed { width: 260px; height: 380px; flex-shrink: 0; scroll-snap-align: center; }
+    .card-img-wrap { height: 200px; }
+    /* 移动端卡片横向滚动 */
+    .cards-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+    }
+    .cards-container::-webkit-scrollbar { display: none; }
+    /* 小屏幕弹窗调整 */
+    .image-modal { padding: 60px 16px; }
+    .image-modal img { max-width: 100%; }
+}
+
+/* ========== 图片弹窗查看 - 缩放淡入动画 ========== */
+.image-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 80px 40px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease, background 0.35s ease;
+}
+.image-modal.show {
+    opacity: 1;
+    visibility: visible;
+    background: rgba(0,0,0,0.88);
+}
+.image-modal img {
+    max-width: 800px;
+    max-height: calc(100vh - 160px);
+    width: auto;
+    transform: scale(0.9);
+    transition: transform 0.4s var(--ease-out-expo);
+}
+.image-modal.show img {
+    transform: scale(1);
+}
+.modal-close {
+    position: fixed;
+    top: 20px; right: 30px;
+    width: 44px; height: 44px;
+    background: rgba(239,68,68,0.2);
+    border: 2px solid rgba(239,68,68,0.4);
+    border-radius: 50%;
+    color: #f87171;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+    z-index: 100000;
+}
+.modal-close:hover {
+    background: rgba(239,68,68,0.4);
+    transform: scale(1.1);
+}
+.modal-title {
+    position: fixed;
+    top: 20px; left: 30px;
+    font-size: 16px;
+    color: #93c5fd;
+    font-weight: 600;
+    z-index: 100000;
+}
+/* 弹窗图片样式 */
+.image-modal img {
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+@media (max-width: 900px) {
+    .image-modal img {
+        max-width: 90vw;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="hero-bg"></div>
+
+<!-- Logo入场动画 - 遮罩层（纯背景，不含SVG） -->
+<div class="logo-intro" id="logoIntro"></div>
+
+<!-- SVG矢量LOGO容器（独立于遮罩，雕刻期间可见） -->
+<div class="logo-canvas-container" id="logoCanvasContainer">
+    <svg class="logo-engrave-svg" viewBox="0 0 1280 1280" id="logoSvg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="laserGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <clipPath id="roundClip">
+                <rect x="60" y="60" width="1160" height="1160" rx="60" ry="60"/>
+            </clipPath>
+        </defs>
+        <g clip-path="url(#roundClip)">
+            <rect x="0" y="0" width="1280" height="1280" fill="#0a0e2a" rx="60"/>
+            <!-- 矢量路径将由JS动态注入 -->
+        </g>
+        <!-- 激光点 -->
+        <circle class="laser-dot" cx="640" cy="640" r="8" fill="#00ffff" filter="url(#laserGlow)" opacity="0"/>
+        <!-- 火花 -->
+        <g class="sparks"></g>
+    </svg>
+</div>
+
+<!-- 顶部导航栏 - 独立分区 -->
+<div class="header">
+    <div class="logo-container">
+        <img src="images/logo-source.jpg" alt="" class="logo-img" id="headerLogoImg" loading="lazy" decoding="async">
+        <div class="logo-text">
+            <span class="logo-char">智</span>
+            <span class="logo-char">答</span>
+            <span class="logo-char">星</span>
+            <span class="logo-char">途</span>
+        </div>
+    </div>
+    <button class="download-btn" id="downloadBtn" onclick="startDownload()">
+        <span class="btn-text">📥 立即下载</span>
+        <span class="btn-loading" style="display:none;">⚡ 智能加速中...</span>
+    </button>
+</div>
+
+<!-- 页面内容容器 -->
+<div class="page-content" id="pageContent">
+
+<div class="scroll-hint" id="scrollHint">往下滑了解更多</div>
+
+<!-- 图片弹窗 -->
+<div class="image-modal" id="imageModal">
+    <span class="modal-title" id="modalTitle">图片预览</span>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <img id="modalImage" src="" alt="全屏图片" loading="lazy" decoding="async">
+</div>
+
+<!-- 第一屏：应用简介 -->
+<section class="section">
+    <div class="warn fade-in">此应用仅供特定内部组织使用，禁止外传，违者自负后果！</div>
+    <h1 class="heading fade-in">智答星途 · 一体化智慧教育平台</h1>
+    <div class="card-large fade-in">
+        <h2>📌 应用简介</h2>
+        <p>智答星途是一款面向教育场景的综合型移动端应用，划分<strong>管理员、学生、家长</strong>三类使用角色，各角色权限、功能场景明确区分。应用整合在线考试、视频学习、智能AI助手、消息通知、意见反馈、课堂签到、数据统计、账号运维等多项能力，覆盖试卷创建发布、课程资源管理、日常学习作答、学情监护、账号安全维护等全流程需求，适配教学管理、自主学习、家校监护三类使用场景。</p>
+    </div>
+    <div class="card-large fade-in">
+        <h2>🔐 统一登录界面</h2>
+        <p>登录页为全角色共用入口，集成身份切换、账号登录、密码找回、申诉查询全套账号安全功能。</p>
+        <div class="module-row">
+            <div class="module-item" data-module="login">
+                <div class="module-header">
+                    <span class="module-title">登录功能</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="login">‹</button>
+                        <button class="nav-arrow nav-next" data-target="login">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/login_main.jpg" alt="登录主界面" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🔄 角色切换与登录</h3><p>顶部设置身份切换栏，包含<strong>管理端、学生端、家长端</strong>三个选项，选中项以高亮蓝色标识。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/login_retrieve.jpg" alt="自主找回密码" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🔑 自主找回密码</h3><p>填写账号与绑定邮箱，发送验证码完成密码重置。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/login_appeal.jpg" alt="申诉找回密码" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📋 申诉找回密码</h3><p>填写要申诉的账号，提交申诉申请，查看处理进度。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 第二屏：管理员端 -->
+<section class="section">
+    <h2 class="heading fade-in">🧑‍🏫 管理员端</h2>
+    <div class="card-large fade-in">
+        <p>拥有平台最高管理权限，负责试卷、学习资源、通知、用户、签到、系统配置等全后台运维工作，底部导航分为<strong>考试、学习、AI、通知、我的</strong>五大主模块，附带独立签到点名模块。</p>
+        
+        <!-- 考试模块（卡片多，独占一行） -->
+        <div class="module-row">
+            <div class="module-item" data-module="admin-exam">
+                <div class="module-header">
+                    <span class="module-title">📝 考试模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="admin-exam">‹</button>
+                        <button class="nav-arrow nav-next" data-target="admin-exam">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_exam_list.jpg" alt="试卷列表" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📋 测试管理</h3><p>展示全部已发布试卷列表，标注试卷科目、时间、计时方式、开放/结束状态。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap long-img"><img src="images/admin_create_exam.jpg" alt="AI出题" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🤖 AI出题发布</h3><p>支持AI出题方式，可配置科目、试卷名称、考试类型、起止时间、计时模式。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap long-img"><img src="images/admin_import_exam.jpg" alt="导入出题" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📥 导入出题</h3><p>支持粘贴试卷内容并解析导入，快速创建试卷。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_paper_manage.jpg" alt="试卷管理" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📋 试卷管理</h3><p>管理已创建试卷，支持修改配置、删除、查看题目内容。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_paper_stats.jpg" alt="试卷统计" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📊 试卷统计</h3><p>按用户维度展示作答记录，包含账号、备注、提交时间、得分。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 学习模块（独占一行） -->
+        <div class="module-row">
+            <div class="module-item" data-module="admin-study">
+                <div class="module-header">
+                    <span class="module-title">📚 学习模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="admin-study">‹</button>
+                        <button class="nav-arrow nav-next" data-target="admin-study">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_study_config.jpg" alt="时长配置" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>⏱️ 时长要求配置</h3><p>按周一至周日，分别为各科目设置每日学习时长。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_video_manage.jpg" alt="视频管理" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🎬 科目视频管理</h3><p>按科目分类展示学习视频资源，支持视频删除操作。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_study_progress.jpg" alt="学习进度" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📈 用户学习进度</h3><p>通过账号、手机号检索学生，查看学习进度详情。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI助手 + 通知 模块（换行） -->
+        <div class="module-row">
+            <div class="module-item" data-module="admin-ai">
+                <div class="module-header">
+                    <span class="module-title">🤖 AI助手</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="admin-ai">‹</button>
+                        <button class="nav-arrow nav-next" data-target="admin-ai">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_ai_text.jpg" alt="AI文本生成" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>💬 文本生成</h3><p>智能AI助手，支持学习问题问答，可复制、重新生成内容。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_ai_image.jpg" alt="AI图片生成" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🎨 图片生成</h3><p>可选<strong>标准、高清</strong>两种质量，支持<strong>1:1、16:9、9:16</strong>等多种画面比例。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_ai_menu.jpg" alt="AI助手菜单" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>⚙️ 附加设置</h3><p>可清空全部聊天记录、查看助手相关介绍信息。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="module-item" data-module="admin-notice">
+                <div class="module-header">
+                    <span class="module-title">📢 通知模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="admin-notice">‹</button>
+                        <button class="nav-arrow nav-next" data-target="admin-notice">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_notice_publish.jpg" alt="发布通知" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📨 发布通知</h3><p>区分系统通知、学习通知，支持插入图片/视频附件。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_notice_list.jpg" alt="通知记录" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📋 通知记录</h3><p>展示已发布通知，显示标题、内容、发布时间、未读数量。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_feedback.jpg" alt="反馈处理" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>💬 反馈处理</h3><p>展示用户反馈列表，可标记为「已处理」，支持批量删除。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 个人中心 + 签到 -->
+        <div class="module-row">
+            <div class="module-item" data-module="admin-profile">
+                <div class="module-header">
+                    <span class="module-title">👤 个人中心</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="admin-profile">‹</button>
+                        <button class="nav-arrow nav-next" data-target="admin-profile">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_profile.jpg" alt="个人中心" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>⚙️ 功能菜单</h3><ul><li>课程资源、用户管理</li><li>版本检测、背景图设置</li><li>签到点名、退出登录</li></ul></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_vaultbox.jpg" alt="VaultBox资源" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📚 VaultBox资源宝库</h3><p>访问应用库、文件库、宝藏网，获取丰富的教育资源。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="module-item" data-module="admin-checkin">
+                <div class="module-header">
+                    <span class="module-title">📍 签到点名</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="admin-checkin">‹</button>
+                        <button class="nav-arrow nav-next" data-target="admin-checkin">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_checkin_live.jpg" alt="现场点名" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📍 现场点名</h3><p>提供二维码、4位口令两种签到形式，支持倒计时设置。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/admin_checkin_history.jpg" alt="历史签到" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📜 历史签到</h3><p>按科目分类查阅过往所有签到记录。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 第三屏：学生端 -->
+<section class="section">
+    <h2 class="heading fade-in">👨‍🎓 学生端</h2>
+    <div class="card-large fade-in">
+        <p>面向在校学生，核心用于完成线上学习、考试作答、接收通知、提交反馈、参与签到，底部导航为<strong>试卷、学习、AI、通知、我的</strong>五大模块。</p>
+        
+        <!-- 试卷 + 学习 + AI 三模块并排 -->
+        <div class="module-row">
+            <div class="module-item" data-module="student-exam">
+                <div class="module-header">
+                    <span class="module-title">📝 试卷模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="student-exam">‹</button>
+                        <button class="nav-arrow nav-next" data-target="student-exam">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_exam_list.jpg" alt="试卷中心" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📋 在线考试</h3><p>展示全部试卷，标注科目、起止时间、总计时、答题状态。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="module-item" data-module="student-study">
+                <div class="module-header">
+                    <span class="module-title">📚 学习模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="student-study">‹</button>
+                        <button class="nav-arrow nav-next" data-target="student-study">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_study_center.jpg" alt="学习中心" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📖 科目学习中心</h3><p>按语文、数学、英语、其他分类展示配套学习视频。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="module-item" data-module="student-ai">
+                <div class="module-header">
+                    <span class="module-title">🤖 AI助手</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="student-ai">‹</button>
+                        <button class="nav-arrow nav-next" data-target="student-ai">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_ai_text.jpg" alt="AI文本生成" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>💬 文本生成</h3><p>智能AI助手，支持学习问题问答。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_ai_image.jpg" alt="AI图片生成" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🎨 图片生成</h3><p>可选<strong>标准、高清</strong>两种质量，多种画面比例。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 通知 + 个人中心 -->
+        <div class="module-row">
+            <div class="module-item" data-module="student-notice">
+                <div class="module-header">
+                    <span class="module-title">📢 通知模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="student-notice">‹</button>
+                        <button class="nav-arrow nav-next" data-target="student-notice">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_notice.jpg" alt="通知中心" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📨 通知查看</h3><p>划分系统通知、学习通知两类，支持查看详情。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_feedback_send.jpg" alt="发送反馈" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>✏️ 意见反馈</h3><p>支持自主编辑内容提交反馈。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_feedback_records.jpg" alt="反馈记录" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📋 我的记录</h3><p>查看个人反馈的待处理、已处理状态及官方回复。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="module-item" data-module="student-profile">
+                <div class="module-header">
+                    <span class="module-title">👤 个人中心</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="student-profile">‹</button>
+                        <button class="nav-arrow nav-next" data-target="student-profile">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_profile.jpg" alt="个人中心" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>⚙️ 功能菜单</h3><ul><li>设置、检查更新</li><li>签到、考试登录</li><li>退出登录</li></ul></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_settings.jpg" alt="设置页面" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🔧 设置</h3><p>包含账户信息、修改密码、用户声明。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/student_account_info.jpg" alt="账户信息" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🔐 账户管理</h3><p>查看账号信息，支持邮箱绑定、密码修改。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 第四屏：家长端 -->
+<section class="section">
+    <h2 class="heading fade-in">👨‍👩‍👧‍👦 家长端</h2>
+    <div class="card-large fade-in">
+        <p>定位为家校监护工具，核心功能为绑定学生账号、查看学生考试与学习数据、接收平台通知，底部导航包含<strong>考试、学习、AI、通知、我的</strong>五大模块。</p>
+        
+        <!-- 考试 + 学习 + AI -->
+        <div class="module-row">
+            <div class="module-item" data-module="parent-exam">
+                <div class="module-header">
+                    <span class="module-title">📊 考试模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="parent-exam">‹</button>
+                        <button class="nav-arrow nav-next" data-target="parent-exam">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_exam_view.jpg" alt="考试查看" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📋 考试查看</h3><p>支持添加、解绑学生账号，查看试卷提交记录、得分。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="module-item" data-module="parent-study">
+                <div class="module-header">
+                    <span class="module-title">📈 学习模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="parent-study">‹</button>
+                        <button class="nav-arrow nav-next" data-target="parent-study">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_study_view.jpg" alt="学习监控" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📚 学习监控</h3><p>按日期维度查看已绑定学生各科目的每日学习进度。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="module-item" data-module="parent-ai">
+                <div class="module-header">
+                    <span class="module-title">🤖 AI助手</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="parent-ai">‹</button>
+                        <button class="nav-arrow nav-next" data-target="parent-ai">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_ai_text.jpg" alt="AI文本生成" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>💬 文本生成</h3><p>智能AI助手，支持学习问题问答。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_ai_image.jpg" alt="AI图片生成" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🎨 图片生成</h3><p>可选<strong>标准、高清</strong>两种质量，多种画面比例。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 通知 + 个人中心 -->
+        <div class="module-row">
+            <div class="module-item" data-module="parent-notice">
+                <div class="module-header">
+                    <span class="module-title">📢 通知模块</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="parent-notice">‹</button>
+                        <button class="nav-arrow nav-next" data-target="parent-notice">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_notice.jpg" alt="通知接收" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>📨 通知接收</h3><p>接收平台推送的系统通知、学习通知。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="module-item" data-module="parent-profile">
+                <div class="module-header">
+                    <span class="module-title">👤 个人中心</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="parent-profile">‹</button>
+                        <button class="nav-arrow nav-next" data-target="parent-profile">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_profile.jpg" alt="个人中心" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>⚙️ 功能菜单</h3><ul><li>课程资源、设置</li><li>检查版本更新</li><li>退出登录</li></ul></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_settings.jpg" alt="设置页面" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🔧 设置</h3><p>包含账户信息、绑定学生、修改密码、用户声明。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_account_info.jpg" alt="账户信息" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>🔐 账户管理</h3><p>查看账号信息，支持邮箱绑定、密码修改。</p></div>
+                        </div>
+                        <div class="card-fixed" onclick="toggleExpand(this)">
+                            <div class="card-img-wrap short-img"><img src="images/parent_bind_student.jpg" alt="绑定学生" loading="lazy" decoding="async"></div>
+                            <div class="card-content"><h3>👨‍🎓 绑定学生</h3><p>管理已绑定的学生账号，支持添加新绑定、解绑。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 第五屏：全角色通用功能 -->
+<section class="section">
+    <h2 class="heading fade-in">🔹 全角色通用功能</h2>
+    <div class="card-large fade-in">
+        <p>此部分功能无权限区分，<strong>管理员/学生/家长</strong>三端所有用户均可正常使用。</p>
+        <div class="module-row">
+            <div class="module-item" data-module="common">
+                <div class="module-header">
+                    <span class="module-title">通用功能</span>
+                    <div class="nav-arrows">
+                        <button class="nav-arrow nav-prev" data-target="common">‹</button>
+                        <button class="nav-arrow nav-next" data-target="common">›</button>
+                    </div>
+                </div>
+                <div class="cards-container">
+                    <div class="cards-track">
+                        <div class="card-fixed">
+                            <span class="role-tag role-all">AI助手</span>
+                            <div class="card-content" style="justify-content: flex-start; padding-top: 8px;">
+                                <h3>🤖 AI助手功能</h3>
+                                <p>支持<strong>文本生成</strong>、<strong>图片生成</strong>两种模式；图片生成可选<strong>标准、高清</strong>两种质量，支持<strong>1:1、16:9、9:16</strong>等多种画面比例。单条AI回复支持复制内容、重新生成内容。</p>
+                            </div>
+                        </div>
+                        <div class="card-fixed">
+                            <span class="role-tag role-all">通知功能</span>
+                            <div class="card-content" style="justify-content: flex-start; padding-top: 8px;">
+                                <h3>📨 通知基础功能</h3>
+                                <p>三端均区分<strong>系统通知、学习通知</strong>分类，所有通知支持查看详情，统一接收平台推送消息。</p>
+                            </div>
+                        </div>
+                        <div class="card-fixed">
+                            <span class="role-tag role-all">账号管理</span>
+                            <div class="card-content" style="justify-content: flex-start; padding-top: 8px;">
+                                <h3>🔐 账号基础管理</h3>
+                                <ul><li>查看个人账号基础信息</li><li>密码显隐切换、绑定邮箱</li><li>修改登录密码</li><li>浏览平台用户声明</li></ul>
+                            </div>
+                        </div>
+                        <div class="card-fixed">
+                            <span class="role-tag role-all">辅助功能</span>
+                            <div class="card-content" style="justify-content: flex-start; padding-top: 8px;">
+                                <h3>⚙️ 应用通用辅助功能</h3>
+                                <ul><li>检测应用最新版本</li><li>跳转至VaultBox资源宝库</li><li>退出当前账号并返回登录界面</li></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// ========== 滚动动画 - IntersectionObserver + 首屏自动触发 ==========
+const fadeElements = document.querySelectorAll('.fade-in');
+
+// IntersectionObserver：滚动时元素进入视口触发渐入
+const scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            scrollObserver.unobserve(entry.target); // 只触发一次
+        }
+    });
+}, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+fadeElements.forEach(el => scrollObserver.observe(el));
+
+// 页面变清晰时，首屏元素逐个浮入（带延迟，形成波浪效果）
+function triggerFirstScreenFadeIn() {
+    const viewportHeight = window.innerHeight;
+    fadeElements.forEach((el, i) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < viewportHeight) {
+            // 首屏元素：逐个延迟浮入
+            setTimeout(() => {
+                el.classList.add('visible');
+            }, i * 60);
+        }
+    });
+}
+
+// 监听页面变清晰后触发首屏动画
+const pageContent = document.getElementById('pageContent');
+const pageObserver = new MutationObserver(() => {
+    if (pageContent.classList.contains('clear')) {
+        triggerFirstScreenFadeIn();
+        pageObserver.disconnect();
+    }
+});
+pageObserver.observe(pageContent, { attributes: true, attributeFilter: ['class'] });
+
+// 备用：如果页面已经清晰
+if (pageContent.classList.contains('clear')) triggerFirstScreenFadeIn();
+
+// ========== 图片弹窗查看逻辑 ==========
+// 所有图片均可点击弹窗查看原图
+// 缓存弹窗DOM引用
+const imageModal = document.getElementById('imageModal');
+const modalImg = document.getElementById('modalImage');
+const modalTitle = document.getElementById('modalTitle');
+
+function toggleExpand(card) {
+    const imgWrap = card.querySelector('.card-img-wrap');
+    if (imgWrap) {
+        const img = imgWrap.querySelector('img');
+        if (img) {
+            modalImg.src = img.src;
+            modalTitle.textContent = img.alt || '图片预览';
+            imageModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+}
+
+function closeModal() {
+    imageModal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// 点击弹窗背景关闭
+imageModal.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+
+// ESC键关闭弹窗
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
+
+// ========== 模块滑动导航逻辑 ==========
+const moduleStates = {};
+
+function initModule(moduleId) {
+    const item = document.querySelector(`[data-module="${moduleId}"]`);
+    if (!item) return;
+    
+    const track = item.querySelector('.cards-track');
+    const container = item.querySelector('.cards-container');
+    const prevBtn = item.querySelector('.nav-prev');
+    const nextBtn = item.querySelector('.nav-next');
+    const cards = track.querySelectorAll('.card-fixed');
+    
+    if (cards.length === 0) return;
+    
+    const GAP = window.innerWidth <= 768 ? 12 : 16; // 移动端间隙更小
+    const CARD_W = window.innerWidth <= 768 ? 260 : 280; // 移动端卡片宽度
+    const STEP = CARD_W + GAP; // 每次滑动一格完整卡片
+    
+    if (!moduleStates[moduleId]) moduleStates[moduleId] = { index: 0 };
+    const state = moduleStates[moduleId];
+    
+    function measure() {
+        const cw = container.offsetWidth;
+        const totalW = cards.length * CARD_W + (cards.length - 1) * GAP;
+        // 计算最大滑动步数，确保整卡对齐
+        const visibleCards = Math.floor((cw + GAP) / STEP);
+        const maxSteps = Math.max(0, cards.length - visibleCards);
+        return { cw, totalW, maxSteps, needsNav: totalW > cw, visibleCards };
+    }
+    
+    function update() {
+        const { cw, totalW, maxSteps, needsNav, visibleCards } = measure();
+        
+        // 移动轨道 - 整卡位移对齐
+        const currentTranslate = state.index * STEP;
+        track.style.transform = `translateX(${-currentTranslate}px)`;
+        
+        if (!needsNav) {
+            prevBtn.classList.remove('show');
+            nextBtn.classList.remove('show');
+            return;
+        }
+        
+        // 有溢出时显示导航按钮
+        prevBtn.classList.toggle('show', state.index > 0);
+        const atEnd = state.index >= maxSteps;
+        nextBtn.classList.toggle('show', !atEnd);
+    }
+    
+    update();
+    
+    prevBtn.addEventListener('click', () => {
+        if (state.index > 0) { state.index--; update(); }
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        const { maxSteps } = measure();
+        if (state.index < maxSteps) { state.index++; update(); }
+    });
+    
+    // 窗口resize时重新计算
+    const ro = new ResizeObserver(() => {
+        const { maxSteps } = measure();
+        if (state.index > maxSteps) state.index = maxSteps;
+        update();
+    });
+    ro.observe(container);
+}
+
+// 初始化所有模块
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-module]').forEach(m => initModule(m.dataset.module));
+    
+    // 图片懒加载和加载优化
+    initImageLoading();
+    
+    // Logo矢量激光雕刻动画
+    initLogoAnimation();
+});
+
+// ========== 智能加速下载功能 ==========
+const DOWNLOAD_CONFIG = {
+    // 下载源配置（按优先级排序）
+    sources: [
+        {
+            name: '本地下载',
+            url: 'zdxt.apk',
+            type: 'local',
+            priority: 1
+        },
+        {
+            name: 'GitHub官方',
+            url: 'https://github.com/WSQ537537/zdxt/releases/download/v1.0/zdxt.apk',
+            type: 'github',
+            priority: 2
+        },
+        {
+            name: 'ghproxy加速',
+            url: 'https://ghproxy.com/https://github.com/WSQ537537/zdxt/releases/download/v1.0/zdxt.apk',
+            type: 'proxy',
+            priority: 3
+        },
+        {
+            name: 'mirror.ghproxy加速',
+            url: 'https://mirror.ghproxy.com/https://github.com/WSQ537537/zdxt/releases/download/v1.0/zdxt.apk',
+            type: 'proxy',
+            priority: 4
+        }
+    ],
+    // 超时时间（毫秒）
+    timeout: 3000,
+    // 测试文件大小（字节）
+    testSize: 1024
+};
+
+// 测试下载源速度
+async function testDownloadSpeed(source) {
+    return new Promise((resolve) => {
+        const startTime = performance.now();
+        const xhr = new XMLHttpRequest();
+        
+        xhr.open('HEAD', source.url, true);
+        xhr.timeout = DOWNLOAD_CONFIG.timeout;
+        
+        xhr.onload = function() {
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            if (xhr.status >= 200 && xhr.status < 400) {
+                resolve({
+                    source: source,
+                    speed: duration,
+                    available: true
+                });
+            } else {
+                resolve({
+                    source: source,
+                    speed: Infinity,
+                    available: false
+                });
+            }
+        };
+        
+        xhr.onerror = () => resolve({ source: source, speed: Infinity, available: false });
+        xhr.ontimeout = () => resolve({ source: source, speed: Infinity, available: false });
+        
+        xhr.send();
+    });
+}
+
+// 选择最优下载源
+async function selectBestSource() {
+    // 首先检查本地文件
+    const localSource = DOWNLOAD_CONFIG.sources.find(s => s.type === 'local');
+    if (localSource) {
+        try {
+            const response = await fetch(localSource.url, { method: 'HEAD', mode: 'no-cors' });
+            return localSource;
+        } catch (e) {
+            // 本地文件不存在，继续测试其他源
+        }
+    }
+    
+    // 测试所有远程源
+    const remoteSources = DOWNLOAD_CONFIG.sources.filter(s => s.type !== 'local');
+    const testResults = await Promise.all(
+        remoteSources.map(source => testDownloadSpeed(source))
+    );
+    
+    // 筛选可用源并按速度排序
+    const availableSources = testResults
+        .filter(result => result.available)
+        .sort((a, b) => a.speed - b.speed);
+    
+    if (availableSources.length === 0) {
+        // 如果没有可用源，返回GitHub官方源作为 fallback
+        return DOWNLOAD_CONFIG.sources.find(s => s.type === 'github');
+    }
+    
+    return availableSources[0].source;
+}
+
+// 开始下载
+async function startDownload() {
+    const btn = document.getElementById('downloadBtn');
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    
+    // 显示加载状态
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline';
+    
+    try {
+        // 选择最优下载源
+        const bestSource = await selectBestSource();
+        
+        // 延迟一点让用户看到"加速中"状态
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // 创建下载链接
+        const link = document.createElement('a');
+        link.href = bestSource.url;
+        link.download = 'zdxt.apk';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        // 触发下载
+        link.click();
+        document.body.removeChild(link);
+        
+        // 显示成功提示
+        btnText.textContent = `✅ 下载已开始`;
+        
+        // 2秒后恢复原状态
+        setTimeout(() => {
+            btnText.textContent = '📥 立即下载';
+        }, 2000);
+        
+    } catch (error) {
+        console.error('下载失败:', error);
+        btnText.textContent = '❌ 下载失败，请重试';
+        
+        // 3秒后恢复
+        setTimeout(() => {
+            btnText.textContent = '📥 立即下载';
+        }, 3000);
+    } finally {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    }
+}
+
+// ========== Logo矢量激光雕刻动画 ==========
+function initLogoAnimation() {
+    const logoIntro = document.getElementById('logoIntro');
+    const logoCanvas = document.getElementById('logoCanvasContainer');
+    const headerLogoImg = document.getElementById('headerLogoImg');
+    const svgEl = document.getElementById('logoSvg');
+    const laserDot = svgEl.querySelector('.laser-dot');
+    const clipGroup = svgEl.querySelector('g[clip-path="url(#roundClip)"]');
+    const pageContent = document.getElementById('pageContent');
+    const logoText = document.querySelector('.logo-text');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    // 预加载全站资源（雕刻阶段同步进行）
+    document.querySelectorAll('.card-img-wrap img').forEach(img => {
+        if (img.dataset.src) { new Image().src = img.dataset.src; }
+    });
+    new Image().src = 'images/logo-source.jpg';
+    
+    // 加载SVG并雕刻
+    fetch('images/logo-vector.svg')
+        .then(r => r.text())
+        .then(svgText => {
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+            const paths = svgDoc.querySelectorAll('.engrave-path');
+            
+            if (paths.length === 0) { startFlyAnimation(); return; }
+            
+            paths.forEach(p => {
+                const clone = svgEl.ownerDocument.importNode(p, true);
+                const len = clone.getTotalLength ? clone.getTotalLength() : 500;
+                clone.style.setProperty('--len', len);
+                clone.style.stroke = clone.getAttribute('fill') || '#ffffff';
+                clone.style.strokeWidth = '2';
+                clone.style.strokeLinecap = 'round';
+                clone.style.strokeLinejoin = 'round';
+                clone.style.fill = 'none';
+                clone.style.opacity = '0';
+                clipGroup.appendChild(clone);
+            });
+            
+            // 雕刻开始：遮罩变透明，露出页面内容
+            logoIntro.classList.add('page-visible');
+            
+            // 雕刻（放慢速度）
+            const pathElements = clipGroup.querySelectorAll('.engrave-path');
+            const total = pathElements.length;
+            const batchSize = Math.max(3, Math.ceil(total / 10));
+            let idx = 0;
+            laserDot.style.opacity = '1';
+            
+            (function carveBatch() {
+                if (idx >= total) {
+                    laserDot.style.opacity = '0';
+                    setTimeout(startFlyAnimation, 100);
+                    return;
+                }
+                Array.from(pathElements).slice(idx, idx + batchSize).forEach((p, i) => {
+                    setTimeout(() => {
+                        p.style.opacity = '1';
+                        p.classList.add('carved');
+                        try {
+                            const b = p.getBBox();
+                            laserDot.setAttribute('cx', b.x + b.width/2);
+                            laserDot.setAttribute('cy', b.y + b.height/2);
+                        } catch(e) {}
+                    }, i * 15);
+                });
+                idx += batchSize;
+                setTimeout(carveBatch, 60);
+            })();
+        })
+        .catch(() => {
+            logoIntro.classList.add('page-visible');
+            startFlyAnimation();
+        });
+    
+    // 飞入动画：LOGO开始缩小 = 页面同步渐显
+    // 渐显全程隐藏header，LOGO到位后才触发
+    function startFlyAnimation() {
+        // LOGO开始缩小，页面同步由模糊渐显
+        pageContent.classList.add('clear');
+        logoCanvas.classList.add('flying');
+        
+        // 飞入动画1.5s结束 = LOGO到位
+        // 此时：矢量渐隐，常态图标显示
+        setTimeout(() => {
+            logoCanvas.style.transition = 'opacity 0.3s ease';
+            logoCanvas.style.opacity = '0';
+        }, 1500);
+        
+        // LOGO固定后：header整体显示（含图标、文字、按钮）
+        setTimeout(() => {
+            const header = document.querySelector('.header');
+            header.classList.add('show');
+            // 常态图标显示
+            headerLogoImg.classList.add('show');
+            // 文字跃动
+            logoText.classList.add('show');
+            logoText.classList.add('bounce');
+            // 按钮上浮
+            downloadBtn.classList.add('show');
+        }, 1400);
+        
+        // 开屏背景淡出
+        setTimeout(() => {
+            logoIntro.style.transition = 'opacity 0.4s ease';
+            logoIntro.style.opacity = '0';
+            setTimeout(() => logoIntro.style.display = 'none', 400);
+        }, 2200);
+    }
+}
+
+// ========== 图片加载优化 ==========
+function initImageLoading() {
+    const images = document.querySelectorAll('.card-img-wrap img');
+    
+    // 使用 IntersectionObserver 实现懒加载
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                loadImage(img);
+                observer.unobserve(img);
+            }
+        });
+    }, {
+        rootMargin: '50px 0px',
+        threshold: 0.01
+    });
+    
+    images.forEach(img => {
+        // 设置 decoding="async" 优化解码性能
+        img.decoding = 'async';
+        img.loading = 'lazy';
+        
+        // 如果图片已经在视口内，直接加载
+        if (isInViewport(img)) {
+            loadImage(img);
+        } else {
+            imageObserver.observe(img);
+        }
+    });
+}
+
+function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+
+function loadImage(img) {
+    // 如果图片已经加载完成
+    if (img.complete && img.naturalWidth > 0) {
+        img.classList.add('loaded');
+        return;
+    }
+    
+    // 监听加载完成事件
+    img.onload = function() {
+        img.classList.add('loaded');
+    };
+    
+    img.onerror = function() {
+        // 加载失败时显示占位
+        img.style.opacity = '0.5';
+        img.classList.add('loaded');
+    };
+    
+    // 强制重新加载以确保触发 onload
+    const src = img.src;
+    img.src = '';
+    img.src = src;
+}
+
+// ========== 滚动引导蒙版 ==========
+const scrollHint = document.getElementById('scrollHint');
+let lastScrollY = 0, scrollTimeout = null, hasScrolled = false;
+
+function updateScrollHint() {
+    const scrollY = window.scrollY;
+    const scrollPercent = scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    
+    if (scrollPercent >= 0.95) { scrollHint.classList.remove('show'); return; }
+    if (!hasScrolled && scrollY < 100) { scrollHint.classList.add('show'); return; }
+    
+    const isScrolling = scrollY !== lastScrollY;
+    if (isScrolling) {
+        scrollHint.classList.remove('show');
+        hasScrolled = true;
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            if (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) < 0.95)
+                scrollHint.classList.add('show');
+        }, 2000);
+    }
+    lastScrollY = scrollY;
+}
+setTimeout(() => { if (window.scrollY < 100) scrollHint.classList.add('show'); }, 1000);
+window.addEventListener('scroll', updateScrollHint, { passive: true });
+
+// ========== 粒子特效 ==========
+const canvas = document.createElement('canvas');
+canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;';
+document.body.appendChild(canvas);
+const ctx = canvas.getContext('2d');
+let particles = [], mouseX = 0, mouseY = 0, lastMX = 0, lastMY = 0;
+
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+    constructor(x, y, vx, vy) {
+        this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+        this.life = 1; this.decay = 0.02 + Math.random() * 0.02;
+        this.size = 2 + Math.random() * 3;
+        this.color = `hsl(${200 + Math.random() * 100}, 80%, 65%)`;
+    }
+    update() { this.x += this.vx; this.y += this.vy; this.vx *= 0.98; this.vy *= 0.98; this.life -= this.decay; }
+    draw() {
+        ctx.save(); ctx.globalAlpha = this.life * 0.6;
+        ctx.fillStyle = this.color; ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
+}
+
+document.addEventListener('mousemove', e => {
+    mouseX = e.clientX; mouseY = e.clientY;
+    const speed = Math.sqrt((mouseX - lastMX) ** 2 + (mouseY - lastMY) ** 2);
+    if (speed > 5) {
+        for (let i = 0; i < Math.min(Math.floor(speed / 5), 5); i++) {
+            const a = Math.random() * Math.PI * 2, v = 1 + Math.random() * 2;
+            particles.push(new Particle(mouseX + (Math.random() - 0.5) * 20, mouseY + (Math.random() - 0.5) * 20, Math.cos(a) * v, Math.sin(a) * v));
+        }
+        if (!animating) { animating = true; requestAnimationFrame(animate); }
+    }
+    lastMX = mouseX; lastMY = mouseY;
+});
+
+let animating = false;
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => { p.update(); p.draw(); });
+    if (particles.length > 0) {
+        requestAnimationFrame(animate);
+    } else {
+        animating = false;
+    }
+}
+</script>
+
+<!-- 通栏长条下载区块 -->
+<div class="download-banner" id="downloadBanner">
+    <div class="download-banner-content">
+        <div class="download-banner-info">
+            <img src="images/logo-source.jpg" alt="智答星途" class="download-banner-icon" loading="lazy" decoding="async">
+            <div class="download-banner-text">
+                <span class="download-banner-title">智答星途</span>
+                <span class="download-banner-desc">安卓手机端下载</span>
+            </div>
+        </div>
+        <button class="download-banner-btn" onclick="startDownload()">
+            <span class="btn-text">📥 立即下载</span>
+            <span class="btn-loading" style="display:none;">⚡ 加速中...</span>
+        </button>
+    </div>
+</div>
+
+</div><!-- /page-content -->
+
+</body>
+</html>
