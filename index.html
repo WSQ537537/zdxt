@@ -7,17 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --deep: #030508;
-  --nebula: #1a0a2e;
-  --cyan: #00d4ff;
-  --pink: #ff6b9d;
-  --gold: #ffd700;
-  --white: #e8f4f8;
-  --glass: rgba(10, 22, 40, 0.55);
-  --glass-border: rgba(0, 212, 255, 0.12);
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-}
+:root{--deep:#030508;--cyan:#00d4ff;--pink:#ff6b9d;--gold:#ffd700;--white:#e8f4f8;
+  --glass:rgba(10,22,40,.55);--gb:rgba(0,212,255,.12);--ease:cubic-bezier(.16,1,.3,1)}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;overflow-x:hidden}
 body{font-family:'Noto Sans SC',sans-serif;background:var(--deep);color:var(--white);overflow-x:hidden}
@@ -29,14 +20,14 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--deep);color:var(--wh
   background:radial-gradient(ellipse 80% 50% at 20% 80%,rgba(138,43,226,.07) 0%,transparent 60%),
   radial-gradient(ellipse 60% 80% at 80% 20%,rgba(0,212,255,.05) 0%,transparent 50%),
   radial-gradient(ellipse 50% 50% at 50% 50%,rgba(255,107,157,.03) 0%,transparent 70%);
-  animation:nebDrift 30s ease-in-out infinite alternate}
-@keyframes nebDrift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-1%,1%) scale(1.01)}}
-.scanlines{position:fixed;inset:0;z-index:2;pointer-events:none;
+  animation:nd 30s ease-in-out infinite alternate}
+@keyframes nd{to{transform:translate(-1%,1%) scale(1.01)}}
+.scan{position:fixed;inset:0;z-index:2;pointer-events:none;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,255,.012) 2px,rgba(0,212,255,.012) 4px)}
 
 /* ===== 导航 ===== */
 nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;
-  padding:14px 24px;background:linear-gradient(180deg,rgba(3,5,8,.92) 0%,rgba(3,5,8,.4) 70%,transparent 100%);backdrop-filter:blur(12px)}
+  padding:14px 24px;background:linear-gradient(180deg,rgba(3,5,8,.92),rgba(3,5,8,.4) 70%,transparent);backdrop-filter:blur(12px)}
 .brand{font-family:'Orbitron',monospace;font-size:17px;font-weight:700;
   background:linear-gradient(135deg,var(--cyan),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:3px}
 .dl-btn{padding:9px 22px;border:1px solid var(--cyan);background:rgba(0,212,255,.08);color:var(--cyan);
@@ -46,130 +37,137 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-conten
 .dl-btn:hover::before{left:100%}
 .dl-btn:hover{background:rgba(0,212,255,.18);box-shadow:0 0 20px rgba(0,212,255,.25)}
 
-/* ===== 舞台 ===== */
 #stage{position:relative;z-index:10;min-height:100vh}
 
-/* ===== 星球英雄区 ===== */
-.hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:80px 20px 40px;position:relative}
-.orbits{position:relative;width:340px;height:340px;margin-bottom:30px}
-.orbit{position:absolute;border:1px solid rgba(0,212,255,.08);border-radius:50%;animation:spin linear infinite}
-.orbit:nth-child(1){inset:0;animation-duration:60s}
-.orbit:nth-child(2){inset:15%;animation-duration:40s;animation-direction:reverse;border-color:rgba(255,107,157,.06)}
-.orbit:nth-child(3){inset:30%;animation-duration:25s;border-color:rgba(255,215,0,.04)}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.planet{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:160px;height:160px;border-radius:50%;
+/* ===== 英雄区 ===== */
+.hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:80px 20px 40px}
+.orbits{position:relative;width:320px;height:320px;margin-bottom:30px}
+.orb{position:absolute;border:1px solid rgba(0,212,255,.08);border-radius:50%;animation:sp linear infinite}
+.orb:nth-child(1){inset:0;animation-duration:60s}
+.orb:nth-child(2){inset:15%;animation-duration:40s;animation-direction:reverse;border-color:rgba(255,107,157,.06)}
+.orb:nth-child(3){inset:30%;animation-duration:25s;border-color:rgba(255,215,0,.04)}
+@keyframes sp{to{transform:rotate(360deg)}}
+.planet{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:150px;height:150px;border-radius:50%;
   background:radial-gradient(circle at 35% 35%,rgba(0,212,255,.7),transparent 50%),
   radial-gradient(circle at 65% 65%,rgba(255,107,157,.5),transparent 50%),
-  radial-gradient(circle at 50% 50%,rgba(138,43,226,.3),transparent 70%),
-  linear-gradient(135deg,#0a1628,#1a0a2e);
+  radial-gradient(circle at 50% 50%,rgba(138,43,226,.3),transparent 70%),linear-gradient(135deg,#0a1628,#1a0a2e);
   box-shadow:0 0 60px rgba(0,212,255,.25),0 0 120px rgba(138,43,226,.12),inset -15px -15px 50px rgba(0,0,0,.5);
-  animation:pulse 4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5}
-.planet::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(0,212,255,.15);animation:pulse 4s ease-in-out infinite .5s}
-@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.03)}}
-.planet img{width:70px;height:70px;border-radius:16px;filter:drop-shadow(0 0 15px rgba(0,212,255,.4))}
-
-/* 卫星导航 */
+  animation:pu 4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5}
+.planet::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(0,212,255,.15);animation:pu 4s ease-in-out infinite .5s}
+@keyframes pu{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.03)}}
+.planet img{width:65px;height:65px;border-radius:14px;filter:drop-shadow(0 0 15px rgba(0,212,255,.4))}
 .sats{position:absolute;inset:0;pointer-events:none}
-.sat{position:absolute;width:52px;height:52px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-border);
+.sat{position:absolute;width:50px;height:50px;border-radius:50%;background:var(--glass);border:1px solid var(--gb);
   backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;
   font-family:'Orbitron',monospace;font-size:9px;color:var(--cyan);letter-spacing:1px;
   cursor:pointer;pointer-events:auto;transition:all .4s var(--ease);box-shadow:0 0 12px rgba(0,212,255,.08)}
 .sat:hover,.sat.on{transform:scale(1.15);border-color:var(--cyan);box-shadow:0 0 25px rgba(0,212,255,.25);background:rgba(0,212,255,.08)}
-.sat.s-admin{top:2%;left:50%;transform:translateX(-50%)}
-.sat.s-stu{bottom:12%;left:6%}
-.sat.s-par{bottom:12%;right:6%}
-.sat.on.s-admin{transform:translateX(-50%) scale(1.15)}
-
+.sat.a{top:2%;left:50%;transform:translateX(-50%)}
+.sat.b{bottom:12%;left:6%}
+.sat.c{bottom:12%;right:6%}
+.sat.on.a{transform:translateX(-50%) scale(1.15)}
 .hero-label{text-align:center}
 .hero-label h1{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;
   background:linear-gradient(135deg,var(--cyan),var(--pink),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:4px}
 .hero-label p{font-size:10px;color:rgba(232,244,248,.4);letter-spacing:6px;text-transform:uppercase;margin-top:8px}
 
 /* ===== 全息面板 ===== */
-.hpanel{max-width:900px;margin:0 auto 50px;padding:22px 26px;background:var(--glass);border:1px solid var(--glass-border);
+.hp{max-width:900px;margin:0 auto 50px;padding:22px 26px;background:var(--glass);border:1px solid var(--gb);
   backdrop-filter:blur(14px);position:relative;overflow:hidden}
-.hpanel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.5}
-.hpanel .corner-tl,.hpanel .corner-br{position:absolute;width:80px;height:80px;opacity:.25}
-.hpanel .corner-tl{top:0;left:0;border-top:1px solid var(--cyan);border-left:1px solid var(--cyan)}
-.hpanel .corner-br{bottom:0;right:0;border-bottom:1px solid var(--cyan);border-right:1px solid var(--cyan)}
-.hpanel-title{font-family:'Orbitron',monospace;font-size:13px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;
+.hp::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.5}
+.hp .ctl,.hp .cbr{position:absolute;width:80px;height:80px;opacity:.25}
+.hp .ctl{top:0;left:0;border-top:1px solid var(--cyan);border-left:1px solid var(--cyan)}
+.hp .cbr{bottom:0;right:0;border-bottom:1px solid var(--cyan);border-right:1px solid var(--cyan)}
+.hp-t{font-family:'Orbitron',monospace;font-size:13px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;
   margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.hpanel-title::before{content:'◆';color:var(--pink);font-size:9px}
-.hpanel-text{font-size:14px;line-height:1.85;color:rgba(232,244,248,.65)}
+.hp-t::before{content:'◆';color:var(--pink);font-size:9px}
+.hp-p{font-size:14px;line-height:1.85;color:rgba(232,244,248,.65)}
 
-/* ===== 区域标题 ===== */
-.zone{max-width:1200px;margin:0 auto;padding:60px 20px 30px;position:relative}
-.zone-head{text-align:center;margin-bottom:40px}
-.zone-head h2{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--cyan);letter-spacing:4px;text-transform:uppercase}
-.zone-line{width:50px;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);margin:10px auto 0}
-.zone-sub{text-align:center;max-width:800px;margin:-20px auto 30px;font-size:13px;line-height:1.7;color:rgba(232,244,248,.5)}
+/* ===== 旋转木马区域 ===== */
+.orbit-section{padding:60px 0 40px;position:relative;overflow:hidden}
+.orbit-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,.03) 0%,transparent 70%);pointer-events:none}
 
-/* ===== 非对称立体卡片网格 ===== */
-.asym-grid{display:grid;gap:20px;padding:0 10px 40px}
+.os-head{text-align:center;margin-bottom:30px;position:relative;z-index:2}
+.os-head h2{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--cyan);letter-spacing:4px;text-transform:uppercase}
+.os-line{width:50px;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);margin:10px auto 0}
+.os-sub{text-align:center;max-width:700px;margin:12px auto 0;font-size:13px;line-height:1.7;color:rgba(232,244,248,.45)}
 
-/* 默认3列 */
-.asym-grid.cols-3{grid-template-columns:repeat(3,1fr)}
-/* 非对称：第一张大卡 + 后面小卡 */
-.asym-grid.cols-asym{grid-template-columns:1.2fr 0.8fr 0.8fr}
-/* 2列 */
-.asym-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+/* 旋转木马容器 */
+.carousel-wrap{position:relative;max-width:1100px;margin:0 auto;padding:0 60px;z-index:2}
 
-/* ===== 3D卡片 ===== */
-.card3d{position:relative;border-radius:14px;overflow:hidden;cursor:pointer;
-  background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(10px);
-  transform-style:preserve-3d;transition:transform .5s var(--ease),box-shadow .4s ease;
-  opacity:0;transform:translateY(50px) rotateX(8deg)}
-.card3d.visible{opacity:1;transform:translateY(0) rotateX(0deg)}
-.card3d::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;z-index:2;
-  background:linear-gradient(90deg,transparent,var(--cyan),var(--pink),transparent);opacity:.4}
-.card3d:hover{transform:translateY(-8px) rotateY(4deg) rotateX(-2deg) scale(1.02);
-  box-shadow:0 20px 60px rgba(0,212,255,.12),0 0 1px rgba(0,212,255,.3)}
+/* 3D旋转木马轨道 */
+.carousel-track{position:relative;height:480px;perspective:1200px;overflow:visible}
 
-/* 大卡（第一个模块卡） */
-.card3d.featured{grid-row:span 2}
-.card3d.featured .c3d-img{height:280px}
-.card3d.featured .c3d-body h3{font-size:16px}
+/* 轨道中心光晕 */
+.carousel-track::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,.06) 0%,rgba(138,43,226,.03) 40%,transparent 70%);
+  pointer-events:none;z-index:1}
 
-.c3d-img{height:200px;overflow:hidden;background:linear-gradient(135deg,rgba(0,212,255,.03),rgba(255,107,157,.03));
-  display:flex;align-items:center;justify-content:center;padding:10px;position:relative}
-.c3d-img img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:6px;
+/* 单张卡片在轨道上的位置 */
+.c-slot{position:absolute;left:50%;top:50%;width:300px;
+  transform-origin:center center;
+  transition:all .7s var(--ease);
+  will-change:transform,opacity;
+  cursor:pointer}
+.c-slot .c-card{width:100%;background:var(--glass);border:1px solid var(--gb);backdrop-filter:blur(10px);
+  border-radius:14px;overflow:hidden;transition:box-shadow .4s ease,transform .4s var(--ease)}
+.c-slot:hover .c-card{box-shadow:0 20px 60px rgba(0,212,255,.15),0 0 1px rgba(0,212,255,.4)}
+.c-slot:hover{z-index:100!important}
+
+/* 卡片图片 */
+.c-img{height:220px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:10px;
+  background:linear-gradient(135deg,rgba(0,212,255,.03),rgba(255,107,157,.03));position:relative}
+.c-img img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:6px;
   transition:transform .5s ease;box-shadow:0 2px 12px rgba(0,0,0,.25)}
-.card3d:hover .c3d-img img{transform:scale(1.05)}
-.c3d-img::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 60%,rgba(10,22,40,.6) 100%);pointer-events:none}
+.c-slot:hover .c-img img{transform:scale(1.05)}
+.c-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(10,22,40,.5) 100%);pointer-events:none}
 
-.c3d-body{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1}
-.c3d-body h3{font-family:'Orbitron',monospace;font-size:13px;color:var(--cyan);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
-.c3d-body p{font-size:12.5px;line-height:1.65;color:rgba(232,244,248,.55);flex:1}
-.c3d-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+/* 卡片内容 */
+.c-body{padding:14px 16px 16px}
+.c-body h3{font-family:'Orbitron',monospace;font-size:13px;color:var(--cyan);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.c-body p{font-size:12.5px;line-height:1.6;color:rgba(232,244,248,.5)}
+.c-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 .tag{padding:3px 9px;border:1px solid rgba(0,212,255,.18);border-radius:4px;font-size:9px;
   font-family:'Orbitron',monospace;color:var(--cyan);letter-spacing:1px}
 
-/* 偏移效果 - 非对称 */
-.card3d:nth-child(3n+2){transform:translateY(30px) rotateX(5deg)}
-.card3d:nth-child(3n+2).visible{transform:translateY(15px) rotateX(0deg)}
-.card3d:nth-child(3n+3){transform:translateY(60px) rotateX(-3deg)}
-.card3d:nth-child(3n+3).visible{transform:translateY(30px) rotateX(0deg)}
-.card3d:nth-child(3n+2):hover{transform:translateY(-8px) rotateY(-4deg) rotateX(2deg) scale(1.02)}
-.card3d:nth-child(3n+3):hover{transform:translateY(-8px) rotateY(6deg) rotateX(-1deg) scale(1.02)}
+/* 导航箭头 */
+.c-nav{display:flex;justify-content:center;gap:24px;margin-top:30px;position:relative;z-index:10}
+.c-btn{width:56px;height:56px;border-radius:50%;border:1px solid rgba(0,212,255,.25);background:rgba(10,22,40,.7);
+  color:var(--cyan);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .3s;backdrop-filter:blur(10px)}
+.c-btn:hover{border-color:var(--cyan);box-shadow:0 0 30px rgba(0,212,255,.3);transform:scale(1.12);background:rgba(0,212,255,.1)}
+
+/* 卡片计数器 */
+.c-counter{text-align:center;margin-top:16px;font-family:'Orbitron',monospace;font-size:13px;
+  color:rgba(0,212,255,.5);letter-spacing:3px;position:relative;z-index:10}
+
+/* 对角线飞入动画 - 从右下往左上 */
+.orbit-section.fly-in .c-slot{
+  opacity:0;
+  transform:translate(-50%,-50%) translate(200px,120px) rotate(15deg) scale(.7);
+  transition:opacity .8s var(--ease), transform .8s var(--ease);
+}
+.orbit-section.fly-in .c-slot.visible{
+  opacity:1;
+  transform:translate(-50%,-50%) translate(0,0) rotate(0deg) scale(1);
+}
 
 /* ===== 弹窗 ===== */
-.starmap{position:fixed;inset:0;z-index:9999;background:rgba(3,5,8,.95);backdrop-filter:blur(20px);
+.sm{position:fixed;inset:0;z-index:9999;background:rgba(3,5,8,.95);backdrop-filter:blur(20px);
   display:none;align-items:center;justify-content:center;padding:40px;opacity:0;transition:opacity .4s}
-.starmap.show{display:flex;opacity:1}
-.starmap img{max-width:900px;max-height:80vh;border-radius:12px;border:1px solid var(--glass-border);
-  box-shadow:0 0 60px rgba(0,212,255,.12)}
-.starmap-x{position:absolute;top:20px;right:20px;width:42px;height:42px;border:1px solid var(--glass-border);
+.sm.show{display:flex;opacity:1}
+.sm img{max-width:900px;max-height:80vh;border-radius:12px;border:1px solid var(--gb);box-shadow:0 0 60px rgba(0,212,255,.12)}
+.sm-x{position:absolute;top:20px;right:20px;width:42px;height:42px;border:1px solid var(--gb);
   border-radius:50%;background:var(--glass);color:var(--cyan);font-size:18px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:all .3s}
-.starmap-x:hover{border-color:var(--pink);color:var(--pink);transform:rotate(90deg)}
+.sm-x:hover{border-color:var(--pink);color:var(--pink);transform:rotate(90deg)}
 
 /* ===== 传送门 ===== */
 .gate{max-width:600px;margin:60px auto 30px;padding:28px;text-align:center;position:relative}
-.gate::before{content:'';position:absolute;inset:0;border:1px solid var(--glass-border);border-radius:18px;
-  background:var(--glass);backdrop-filter:blur(14px);z-index:-1}
+.gate::before{content:'';position:absolute;inset:0;border:1px solid var(--gb);border-radius:18px;background:var(--glass);backdrop-filter:blur(14px);z-index:-1}
 .gate h3{font-family:'Orbitron',monospace;font-size:15px;color:var(--cyan);letter-spacing:3px;margin-bottom:14px}
 .gate-btn{display:inline-block;padding:13px 44px;
   background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(255,107,157,.15));
@@ -183,26 +181,20 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-conten
 footer{text-align:center;padding:30px 20px;color:rgba(232,244,248,.25);font-size:10px;letter-spacing:2px;font-family:'Orbitron',monospace}
 
 /* ===== 移动端 ===== */
-@media(max-width:1024px){
-  .asym-grid.cols-3,.asym-grid.cols-asym{grid-template-columns:repeat(2,1fr)}
-  .card3d.featured{grid-row:span 1}
-  .card3d.featured .c3d-img{height:200px}
-}
-@media(max-width:640px){
-  nav{padding:10px 14px}
-  .brand{font-size:13px;letter-spacing:2px}
-  .dl-btn{padding:7px 14px;font-size:9px}
-  .orbits{width:260px;height:260px}
-  .planet{width:120px;height:120px}
-  .planet img{width:52px;height:52px;border-radius:12px}
-  .hero-label h1{font-size:17px;letter-spacing:2px}
-  .sat{width:42px;height:42px;font-size:8px}
-  .hpanel{padding:16px 18px;margin:0 10px 30px}
-  .zone{padding:40px 12px 20px}
-  .zone-head h2{font-size:15px;letter-spacing:2px}
-  .asym-grid.cols-3,.asym-grid.cols-asym,.asym-grid.cols-2{grid-template-columns:1fr}
-  .card3d.featured .c3d-img{height:180px}
-  .c3d-img{height:170px;padding:8px}
+@media(max-width:768px){
+  nav{padding:10px 14px}.brand{font-size:13px;letter-spacing:2px}.dl-btn{padding:7px 14px;font-size:9px}
+  .orbits{width:240px;height:240px}.planet{width:110px;height:110px}.planet img{width:48px;height:48px}
+  .hero-label h1{font-size:17px;letter-spacing:2px}.sat{width:40px;height:40px;font-size:8px}
+  .hp{padding:16px 18px;margin:0 10px 30px}
+  .orbit-section{padding:50px 0 40px}
+  .os-head h2{font-size:15px;letter-spacing:2px}
+  .carousel-wrap{padding:0 20px}
+  .carousel-track{height:480px}
+  .c-slot{width:260px}
+  .c-img{height:180px;padding:8px}
+  .c-body{padding:12px 14px}
+  .c-body h3{font-size:12px}
+  .c-body p{font-size:11.5px}
   .gate{margin:40px 10px 20px;padding:20px}
   .gate-btn{padding:11px 32px;font-size:11px}
 }
@@ -212,25 +204,25 @@ footer{text-align:center;padding:30px 20px;color:rgba(232,244,248,.25);font-size
 
 <div id="stars"><canvas id="starCanvas"></canvas></div>
 <div class="nebula"></div>
-<div class="scanlines"></div>
+<div class="scan"></div>
 
 <nav>
   <div class="brand">智答星途</div>
-  <button class="dl-btn" onclick="dl()"><span id="dlText">下载应用</span></button>
+  <button class="dl-btn" onclick="dl()"><span id="dlT">下载应用</span></button>
 </nav>
 
 <div id="stage">
 
-<!-- ===== 英雄区 ===== -->
+<!-- 英雄区 -->
 <div class="hero">
   <div class="orbits">
-    <div class="orbit"></div><div class="orbit"></div><div class="orbit"></div>
+    <div class="orb"></div><div class="orb"></div><div class="orb"></div>
     <div class="sats">
-      <div class="sat s-admin on" onclick="go('admin-zone')">管理</div>
-      <div class="sat s-stu" onclick="go('stu-zone')">学生</div>
-      <div class="sat s-par" onclick="go('par-zone')">家长</div>
+      <div class="sat a on" onclick="go('sec-intro')">概览</div>
+      <div class="sat b" onclick="go('sec-admin')">管理</div>
+      <div class="sat c" onclick="go('sec-stu')">学生</div>
     </div>
-    <div class="planet" onclick="go('intro-zone')">
+    <div class="planet" onclick="go('sec-intro')">
       <img src="images/logo-source.jpg" alt="智答星途">
     </div>
   </div>
@@ -240,54 +232,72 @@ footer{text-align:center;padding:30px 20px;color:rgba(232,244,248,.25);font-size
   </div>
 </div>
 
-<!-- ===== 应用简介 ===== -->
-<div class="zone" id="intro-zone">
-  <div class="hpanel">
-    <div class="corner-tl"></div><div class="corner-br"></div>
-    <div class="hpanel-title">系统概览</div>
-    <div class="hpanel-text">
-      智答星途是一款面向教育场景的综合型移动端应用，划分<strong style="color:var(--cyan)">管理员、学生、家长</strong>三类使用角色，各角色权限、功能场景明确区分。应用整合在线考试、视频学习、智能AI助手、消息通知、意见反馈、课堂签到、数据统计、账号运维等多项能力，覆盖试卷创建发布、课程资源管理、日常学习作答、学情监护、账号安全维护等全流程需求，适配教学管理、自主学习、家校监护三类使用场景。
+<!-- 应用简介 -->
+<div class="orbit-section fly-in" id="sec-intro">
+  <div class="os-head"><h2>系统概览</h2><div class="os-line"></div></div>
+  <div style="max-width:900px;margin:0 auto;padding:0 20px">
+    <div class="hp" style="margin-bottom:20px">
+      <div class="ctl"></div><div class="cbr"></div>
+      <div class="hp-t">应用简介</div>
+      <div class="hp-p">智答星途是一款面向教育场景的综合型移动端应用，划分<strong style="color:var(--cyan)">管理员、学生、家长</strong>三类使用角色，各角色权限、功能场景明确区分。应用整合在线考试、视频学习、智能AI助手、消息通知、意见反馈、课堂签到、数据统计、账号运维等多项能力，覆盖试卷创建发布、课程资源管理、日常学习作答、学情监护、账号安全维护等全流程需求，适配教学管理、自主学习、家校监护三类使用场景。</div>
+    </div>
+    <div class="hp">
+      <div class="ctl"></div><div class="cbr"></div>
+      <div class="hp-t">统一登录</div>
+      <div class="hp-p">登录页为全角色共用入口，集成身份切换、账号登录、密码找回、申诉查询全套账号安全功能。顶部设置身份切换栏，包含管理端、学生端、家长端三个选项，选中项以高亮蓝色标识。支持填写账号与绑定邮箱发送验证码完成密码重置，也可填写要申诉的账号提交申诉申请并查看处理进度。</div>
     </div>
   </div>
+</div>
 
-  <div class="hpanel" style="margin-top:20px">
-    <div class="corner-tl"></div><div class="corner-br"></div>
-    <div class="hpanel-title">统一登录</div>
-    <div class="hpanel-text">
-      登录页为全角色共用入口，集成身份切换、账号登录、密码找回、申诉查询全套账号安全功能。顶部设置身份切换栏，包含管理端、学生端、家长端三个选项，选中项以高亮蓝色标识。支持填写账号与绑定邮箱发送验证码完成密码重置，也可填写要申诉的账号提交申诉申请并查看处理进度。
-    </div>
+<!-- 管理员端 -->
+<div class="orbit-section fly-in" id="sec-admin">
+  <div class="os-head"><h2>管理员端 · 指挥中心</h2><div class="os-line"></div>
+    <div class="os-sub">拥有平台最高管理权限，负责试卷、学习资源、通知、用户、签到、系统配置等全后台运维工作。</div>
   </div>
+  <div class="carousel-wrap">
+    <div class="carousel-track" id="ct-admin"></div>
+  </div>
+  <div class="c-nav"><button class="c-btn" onclick="slide('admin',-1)">&#8249;</button><button class="c-btn" onclick="slide('admin',1)">&#8250;</button></div>
+  <div class="c-counter" id="cc-admin"></div>
 </div>
 
-<!-- ===== 管理员端 ===== -->
-<div class="zone" id="admin-zone">
-  <div class="zone-head"><h2>管理员端 · 指挥中心</h2><div class="zone-line"></div></div>
-  <div class="zone-sub">拥有平台最高管理权限，负责试卷、学习资源、通知、用户、签到、系统配置等全后台运维工作，底部导航分为考试、学习、AI、通知、我的五大主模块，附带独立签到点名模块。</div>
-  <div class="asym-grid cols-asym" id="adminGrid"></div>
+<!-- 学生端 -->
+<div class="orbit-section fly-in" id="sec-stu">
+  <div class="os-head"><h2>学生端 · 学习舱</h2><div class="os-line"></div>
+    <div class="os-sub">面向在校学生，核心用于完成线上学习、考试作答、接收通知、提交反馈、参与签到。</div>
+  </div>
+  <div class="carousel-wrap">
+    <div class="carousel-track" id="ct-stu"></div>
+  </div>
+  <div class="c-nav"><button class="c-btn" onclick="slide('stu',-1)">&#8249;</button><button class="c-btn" onclick="slide('stu',1)">&#8250;</button></div>
+  <div class="c-counter" id="cc-stu"></div>
 </div>
 
-<!-- ===== 学生端 ===== -->
-<div class="zone" id="stu-zone">
-  <div class="zone-head"><h2>学生端 · 学习舱</h2><div class="zone-line"></div></div>
-  <div class="zone-sub">面向在校学生，核心用于完成线上学习、考试作答、接收通知、提交反馈、参与签到，底部导航为试卷、学习、AI、通知、我的五大模块。</div>
-  <div class="asym-grid cols-3" id="stuGrid"></div>
+<!-- 家长端 -->
+<div class="orbit-section fly-in" id="sec-par">
+  <div class="os-head"><h2>家长端 · 监护站</h2><div class="os-line"></div>
+    <div class="os-sub">定位为家校监护工具，核心功能为绑定学生账号、查看学生考试与学习数据、接收平台通知。</div>
+  </div>
+  <div class="carousel-wrap">
+    <div class="carousel-track" id="ct-par"></div>
+  </div>
+  <div class="c-nav"><button class="c-btn" onclick="slide('par',-1)">&#8249;</button><button class="c-btn" onclick="slide('par',1)">&#8250;</button></div>
+  <div class="c-counter" id="cc-par"></div>
 </div>
 
-<!-- ===== 家长端 ===== -->
-<div class="zone" id="par-zone">
-  <div class="zone-head"><h2>家长端 · 监护站</h2><div class="zone-line"></div></div>
-  <div class="zone-sub">定位为家校监护工具，核心功能为绑定学生账号、查看学生考试与学习数据、接收平台通知，底部导航包含考试、学习、AI、通知、我的五大模块。</div>
-  <div class="asym-grid cols-3" id="parGrid"></div>
+<!-- 通用功能 -->
+<div class="orbit-section fly-in" id="sec-common">
+  <div class="os-head"><h2>通用功能 · 核心模块</h2><div class="os-line"></div>
+    <div class="os-sub">此部分功能无权限区分，管理员/学生/家长三端所有用户均可正常使用。</div>
+  </div>
+  <div class="carousel-wrap">
+    <div class="carousel-track" id="ct-common"></div>
+  </div>
+  <div class="c-nav"><button class="c-btn" onclick="slide('common',-1)">&#8249;</button><button class="c-btn" onclick="slide('common',1)">&#8250;</button></div>
+  <div class="c-counter" id="cc-common"></div>
 </div>
 
-<!-- ===== 通用功能 ===== -->
-<div class="zone" id="common-zone">
-  <div class="zone-head"><h2>通用功能 · 核心模块</h2><div class="zone-line"></div></div>
-  <div class="zone-sub">此部分功能无权限区分，管理员/学生/家长三端所有用户均可正常使用。</div>
-  <div class="asym-grid cols-2" id="commonGrid"></div>
-</div>
-
-<!-- ===== 传送门 ===== -->
+<!-- 传送门 -->
 <div class="gate">
   <h3>准备进入智答星途？</h3>
   <button class="gate-btn" onclick="dl()">立即下载应用</button>
@@ -301,37 +311,35 @@ footer{text-align:center;padding:30px 20px;color:rgba(232,244,248,.25);font-size
 </div>
 
 <!-- 弹窗 -->
-<div class="starmap" id="sm" onclick="closeSM(event)">
-  <button class="starmap-x" onclick="closeSM()">&#10005;</button>
-  <img src="" alt="" id="smImg">
+<div class="sm" id="sm" onclick="csm(event)">
+  <button class="sm-x" onclick="csm()">&#10005;</button>
+  <img src="" alt="" id="smI">
 </div>
 
 <script>
 // ===== 星空 =====
 const cv=document.getElementById('starCanvas'),cx=cv.getContext('2d');
-let stars=[];
+let sts=[];
 function rsz(){cv.width=innerWidth;cv.height=innerHeight}
 rsz();addEventListener('resize',rsz);
-class S{constructor(){this.r()}
+class Star{constructor(){this.r()}
 r(){this.x=Math.random()*cv.width;this.y=Math.random()*cv.height;this.s=Math.random()*1.4+.3;this.b=Math.random();this.ts=Math.random()*.02+.005;this.dx=(Math.random()-.5)*.08;this.dy=(Math.random()-.5)*.08}
 u(){this.x+=this.dx;this.y+=this.dy;this.b+=this.ts;if(this.b>1||this.b<.2)this.ts*=-1;if(this.x<0||this.x>cv.width||this.y<0||this.y>cv.height)this.r()}
-d(){const a=.3+this.b*.7;cx.beginPath();cx.arc(this.x,this.y,this.s,0,Math.PI*2);cx.fillStyle=`rgba(232,244,248,${a})`;cx.fill();if(this.s>1){cx.beginPath();cx.arc(this.x,this.y,this.s*2,0,Math.PI*2);cx.fillStyle=`rgba(232,244,248,${a*.08})`;cx.fill()}}
-}
-for(let i=0;i<180;i++)stars.push(new S());
-let fc=0,shoots=[];
-class Shoot{constructor(){this.active=false}
-fire(){this.active=true;this.x=Math.random()*cv.width;this.y=0;this.len=Math.random()*70+30;this.spd=Math.random()*7+3;this.ang=Math.PI/4+(Math.random()-.5)*.3;this.life=1}
-u(){if(!this.active)return;this.x+=Math.cos(this.ang)*this.spd;this.y+=Math.sin(this.ang)*this.spd;this.life-=.014;if(this.life<=0||this.x>cv.width||this.y>cv.height)this.active=false}
-d(){if(!this.active)return;const tx=this.x-Math.cos(this.ang)*this.len,ty=this.y-Math.sin(this.ang)*this.len;const g=cx.createLinearGradient(this.x,this.y,tx,ty);g.addColorStop(0,`rgba(0,212,255,${this.life})`);g.addColorStop(1,'transparent');cx.beginPath();cx.moveTo(this.x,this.y);cx.lineTo(tx,ty);cx.strokeStyle=g;cx.lineWidth=1.5;cx.stroke()}
-}
-for(let i=0;i<3;i++)shoots.push(new Shoot());
-function anim(){cx.clearRect(0,0,cv.width,cv.height);stars.forEach(s=>{s.u();s.d()});shoots.forEach(s=>{s.u();s.d()});fc++;if(fc%350===0){const s=shoots.find(s=>!s.active);if(s)s.fire()}requestAnimationFrame(anim)}
+d(){const a=.3+this.b*.7;cx.beginPath();cx.arc(this.x,this.y,this.s,0,Math.PI*2);cx.fillStyle=`rgba(232,244,248,${a})`;cx.fill()}}
+for(let i=0;i<160;i++)sts.push(new Star());
+let fc=0,sh=[];
+class Sh{constructor(){this.a=false}
+f(){this.a=true;this.x=Math.random()*cv.width;this.y=0;this.l=Math.random()*70+30;this.sp=Math.random()*7+3;this.an=Math.PI/4+(Math.random()-.5)*.3;this.li=1}
+u(){if(!this.a)return;this.x+=Math.cos(this.an)*this.sp;this.y+=Math.sin(this.an)*this.sp;this.li-=.014;if(this.li<=0||this.x>cv.width||this.y>cv.height)this.a=false}
+d(){if(!this.a)return;const tx=this.x-Math.cos(this.an)*this.l,ty=this.y-Math.sin(this.an)*this.l;const g=cx.createLinearGradient(this.x,this.y,tx,ty);g.addColorStop(0,`rgba(0,212,255,${this.li})`);g.addColorStop(1,'transparent');cx.beginPath();cx.moveTo(this.x,this.y);cx.lineTo(tx,ty);cx.strokeStyle=g;cx.lineWidth=1.5;cx.stroke()}}
+for(let i=0;i<3;i++)sh.push(new Sh());
+function anim(){cx.clearRect(0,0,cv.width,cv.height);sts.forEach(s=>{s.u();s.d()});sh.forEach(s=>{s.u();s.d()});fc++;if(fc%350===0){const s=sh.find(s=>!s.a);if(s)s.f()}requestAnimationFrame(anim)}
 anim();
 
 // ===== 数据 =====
-const D={
+const DATA={
   admin:[
-    {img:'admin_exam_list.jpg',t:'测试管理',d:'展示全部已发布试卷列表，标注试卷科目、时间、计时方式、开放/结束状态。',tags:['考试','管理'],big:true},
+    {img:'admin_exam_list.jpg',t:'测试管理',d:'展示全部已发布试卷列表，标注试卷科目、时间、计时方式、开放/结束状态。',tags:['考试','管理']},
     {img:'admin_create_exam.jpg',t:'AI出题发布',d:'支持AI出题方式，可配置科目、试卷名称、考试类型、起止时间、计时模式。',tags:['AI','出题']},
     {img:'admin_import_exam.jpg',t:'导入出题',d:'支持粘贴试卷内容并解析导入，快速创建试卷。',tags:['导入','快捷']},
     {img:'admin_paper_manage.jpg',t:'试卷管理',d:'管理已创建试卷，支持修改配置、删除、查看题目内容。',tags:['管理','编辑']},
@@ -351,7 +359,7 @@ const D={
     {img:'admin_checkin_history.jpg',t:'历史签到',d:'按科目分类查阅过往所有签到记录。',tags:['签到','历史']},
   ],
   stu:[
-    {img:'student_exam_list.jpg',t:'在线考试',d:'展示全部试卷，标注科目、起止时间、总计时、答题状态。',tags:['考试','答题'],big:true},
+    {img:'student_exam_list.jpg',t:'在线考试',d:'展示全部试卷，标注科目、起止时间、总计时、答题状态。',tags:['考试','答题']},
     {img:'student_study_center.jpg',t:'科目学习中心',d:'按语文、数学、英语、其他分类展示配套学习视频。',tags:['学习','视频']},
     {img:'student_ai_text.jpg',t:'文本生成',d:'智能AI助手，支持学习问题问答。',tags:['AI','问答']},
     {img:'student_ai_image.jpg',t:'图片生成',d:'可选标准、高清两种质量，多种画面比例。',tags:['AI','创作']},
@@ -363,7 +371,7 @@ const D={
     {img:'student_account.jpg',t:'账户管理',d:'查看账号信息，支持邮箱绑定、密码修改。',tags:['账户','安全']},
   ],
   par:[
-    {img:'parent_exam_view.jpg',t:'考试查看',d:'支持添加、解绑学生账号，查看试卷提交记录、得分。',tags:['考试','查看'],big:true},
+    {img:'parent_exam_view.jpg',t:'考试查看',d:'支持添加、解绑学生账号，查看试卷提交记录、得分。',tags:['考试','查看']},
     {img:'parent_study_view.jpg',t:'学习监控',d:'按日期维度查看已绑定学生各科目的每日学习进度。',tags:['监控','进度']},
     {img:'parent_ai_text.jpg',t:'文本生成',d:'智能AI助手，支持学习问题问答。',tags:['AI','问答']},
     {img:'parent_ai_image.jpg',t:'图片生成',d:'可选标准、高清两种质量，多种画面比例。',tags:['AI','创作']},
@@ -380,54 +388,158 @@ const D={
   ]
 };
 
-// ===== 渲染卡片 =====
-function render(data,gridId){
-  const g=document.getElementById(gridId);
-  g.innerHTML=data.map(c=>`
-    <div class="card3d${c.big?' featured':''}" onclick="openSM('images/${c.img}','${c.t}')">
-      <div class="c3d-img"><img src="images/${c.img}" alt="${c.t}" loading="lazy" decoding="async"></div>
-      <div class="c3d-body">
-        <h3>${c.t}</h3>
-        <p>${c.d}</p>
-        <div class="c3d-tags">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+// ===== 旋转木马状态 =====
+const carousels={};
+
+// 初始化旋转木马
+function initCarousel(id,data){
+  const track=document.getElementById('ct-'+id);
+  const counter=document.getElementById('cc-'+id);
+  
+  // 创建卡片DOM
+  const slots=data.map((c,i)=>`
+    <div class="c-slot" data-idx="${i}" onclick="openSM('images/${c.img}','${c.t}')">
+      <div class="c-card">
+        <div class="c-img"><img src="images/${c.img}" alt="${c.t}" loading="lazy" decoding="async"></div>
+        <div class="c-body">
+          <h3>${c.t}</h3>
+          <p>${c.d}</p>
+          <div class="c-tags">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        </div>
       </div>
     </div>`).join('');
+  track.innerHTML=slots;
+  
+  carousels[id]={idx:0,total:data.length,track,counter};
+  updateCarousel(id);
 }
-render(D.admin,'adminGrid');
-render(D.stu,'stuGrid');
-render(D.par,'parGrid');
-render(D.common,'commonGrid');
 
-// ===== 滚动渐入 =====
-const io=new IntersectionObserver((entries)=>{
+// 更新旋转木马位置
+function updateCarousel(id){
+  const c=carousels[id];
+  const slots=c.track.querySelectorAll('.c-slot');
+  const n=c.total;
+  const cur=c.idx;
+  const isMobile=innerWidth<768;
+  
+  // 定义椭圆轨道参数
+  // rx: 水平半径, ry: 垂直半径, tilt: 倾斜角度
+  const rx=isMobile?160:260;
+  const ry=isMobile?90:120;
+  const tilt=isMobile?12:18; // 倾斜角度（度）- 增大让弧度更明显
+  const tiltRad=tilt*Math.PI/180;
+  
+  // 可见范围：中心±2张（桌面）±1张（移动）
+  const range=isMobile?1:2;
+  
+  slots.forEach((slot,i)=>{
+    // 计算在椭圆上的相对位置
+    let diff=i-cur;
+    // 环绕处理
+    while(diff>n/2)diff-=n;
+    while(diff<-n/2)diff+=n;
+    
+    if(Math.abs(diff)>range){
+      slot.style.opacity='0';
+      slot.style.pointerEvents='none';
+      slot.style.zIndex='0';
+      return;
+    }
+    
+    slot.style.pointerEvents='auto';
+    
+    // 椭圆上的位置 - 更大的角度间隔让卡片间距更大
+    const angle=diff*0.7;
+    const x=Math.sin(angle)*rx;
+    const yBase=Math.cos(angle)*ry;
+    // 应用倾斜：y方向偏移 - 创造从右下到左上的弧线
+    const y=yBase*Math.cos(tiltRad);
+    const z=Math.cos(angle)*rx*0.6; // 深度 - 增强前后距离
+    
+    // 缩放和透明度基于距离 - 更强的衰减
+    const dist=Math.abs(diff);
+    const scale=1-dist*0.18;
+    const opacity=1-dist*0.3;
+    const zIndex=Math.round((range+1-dist)*10); // 确保z-index始终为正
+    
+    // 旋转：越远的卡片越倾斜 - 更大的旋转角度
+    const rotY=diff*-12;
+    const rotX=dist*5;
+    
+    slot.style.transform=`translate(-50%,-50%) translate(${x}px,${y}px) translateZ(${z}px) rotateY(${rotY}deg) rotateX(${rotX}deg) scale(${scale})`;
+    slot.style.opacity=opacity;
+    slot.style.zIndex=zIndex;
+  });
+  
+  c.counter.textContent=`${cur+1} / ${n}`;
+}
+
+// 切换卡片
+function slide(id,dir){
+  const c=carousels[id];
+  c.idx=(c.idx+dir+c.total)%c.total;
+  updateCarousel(id);
+}
+
+// ===== 滚动飞入动画 =====
+const flyIO=new IntersectionObserver((entries)=>{
   entries.forEach(e=>{
     if(e.isIntersecting){
-      const cards=e.target.querySelectorAll('.card3d');
-      cards.forEach((c,i)=>{
-        setTimeout(()=>c.classList.add('visible'),i*80);
+      const slots=e.target.querySelectorAll('.c-slot');
+      slots.forEach((s,i)=>{
+        setTimeout(()=>{
+          s.classList.add('visible');
+          // 飞入完成后移除fly-in类，让旋转木马JS完全接管样式
+          if(i===slots.length-1){
+            setTimeout(()=>e.target.classList.remove('fly-in'),900);
+          }
+        },i*80);
       });
-      io.unobserve(e.target);
+      flyIO.unobserve(e.target);
     }
   });
-},{threshold:.05,rootMargin:'0px 0px -30px 0px'});
-document.querySelectorAll('.asym-grid').forEach(g=>io.observe(g));
+},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.orbit-section').forEach(s=>flyIO.observe(s));
+
+// ===== 触摸滑动 =====
+document.querySelectorAll('.carousel-track').forEach(track=>{
+  let sx=0,swiped=false;
+  track.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;swiped=false},{passive:true});
+  track.addEventListener('touchmove',e=>{
+    const dx=e.touches[0].clientX-sx;
+    if(Math.abs(dx)>40&&!swiped){
+      swiped=true;
+      const id=track.id.replace('ct-','');
+      slide(id,dx>0?-1:1);
+    }
+  },{passive:true});
+});
+
+// ===== 初始化所有旋转木马 =====
+initCarousel('admin',DATA.admin);
+initCarousel('stu',DATA.stu);
+initCarousel('par',DATA.par);
+initCarousel('common',DATA.common);
+
+// 窗口大小变化时更新
+addEventListener('resize',()=>{Object.keys(carousels).forEach(id=>updateCarousel(id))});
 
 // ===== 导航 =====
 function go(id){document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'})}
 
 // ===== 弹窗 =====
 function openSM(src,title){
-  const m=document.getElementById('sm'),img=document.getElementById('smImg');
+  const m=document.getElementById('sm'),img=document.getElementById('smI');
   img.src=src;img.alt=title;m.classList.add('show');document.body.style.overflow='hidden';
 }
-function closeSM(e){
+function csm(e){
   if(e&&e.target!==e.currentTarget)return;
   document.getElementById('sm').classList.remove('show');document.body.style.overflow='';
 }
 
 // ===== 下载 =====
 async function dl(){
-  const t=document.getElementById('dlText');
+  const t=document.getElementById('dlT');
   const orig=t.textContent;t.textContent='⚡ 加速中...';
   await new Promise(r=>setTimeout(r,800));
   const a=document.createElement('a');a.href='zdxt.apk';a.download='zdxt.apk';
