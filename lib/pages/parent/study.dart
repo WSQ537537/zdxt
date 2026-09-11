@@ -17,7 +17,6 @@ class _StudyPageState extends State<StudyPage> {
   List userProgressList = [];
   bool progressLoading = true;
   bool hasStartedLoading = false;
-  bool hasLoadedOnce = false;
   int expandedUser = -1;
   Map<int, int> expandedWeek = {};
   bool hasBoundStudents = false;
@@ -63,16 +62,22 @@ class _StudyPageState extends State<StudyPage> {
       );
       final bindData = jsonDecode(bindRes.body);
       if (bindData["success"] == true) {
-        setState(() {
-          hasBoundStudents = (bindData["data"] as List).isNotEmpty;
-        });
+        final students = bindData["data"] as List;
+        setState(() => hasBoundStudents = students.isNotEmpty);
         if (hasBoundStudents) {
+          // 🔥 不调用 searchProgress 在这里：由 loadTimeRanges 内部负责触发
           await loadTimeRanges();
-          // ⚠️ 不在这里调用 searchProgress()，等 loadRangeWeeks 完成后自动触发
+          // 🔥 searchProgress 由 loadRangeWeeks 内的 setState 回调负责触发
+          // 不在这里设置 progressLoading=false，让 searchProgress 的 finally 块负责
+        } else {
+          // 无绑定学生时，立即关闭 loading
+          setState(() => progressLoading = false);
         }
+      } else {
+        setState(() => progressLoading = false);
       }
-      setState(() => progressLoading = false);
     } catch (e) {
+      debugPrint('❌ checkAndLoad 异常: $e');
       setState(() => progressLoading = false);
     }
   }
@@ -159,9 +164,8 @@ class _StudyPageState extends State<StudyPage> {
         setState(() {
           rangeWeeks = weeks;
           selectedWeekStr = defaultWeekStr;
-          // ✅ 周确定后立即加载进度数据（仅初次加载时触发）
-          if (!hasLoadedOnce && defaultWeekStr != null) {
-            hasLoadedOnce = true;
+          // 🔥 每次范围切换都重新搜索（无 hasLoadedOnce 守卫）
+          if (defaultWeekStr != null) {
             searchProgress();
           }
         });
@@ -359,8 +363,9 @@ class _StudyPageState extends State<StudyPage> {
                       onChanged: (v) async {
                         if (v != null && v != selectedRangeId) {
                           setState(() => selectedRangeId = v);
+                          // 🔥 loadRangeWeeks 内部会通过 setState 回调自动触发 searchProgress
+                          // 不在这里额外调用 searchProgress，避免用旧 week 查一次再重建
                           await loadRangeWeeks(v);
-                          await searchProgress();
                         }
                       },
                     ),

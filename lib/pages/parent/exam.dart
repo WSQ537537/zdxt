@@ -34,10 +34,12 @@ class _ExamPageState extends State<ExamPage> {
       final prefs = await SharedPreferences.getInstance();
       final userInfo = prefs.getString("userInfo");
       if (userInfo == null) {
+        debugPrint('❌ checkAndLoad: userInfo is null');
         setState(() => loading = false);
         return;
       }
       final parentAccount = jsonDecode(userInfo)["account"] ?? "";
+      debugPrint('📡 checkAndLoad: parentAccount=$parentAccount');
 
       final res = await http.post(
         Uri.parse("$baseUrl/api/user"),
@@ -48,17 +50,23 @@ class _ExamPageState extends State<ExamPage> {
         }),
       );
 
+      debugPrint('📥 checkAndLoad response status: ${res.statusCode}');
       final data = jsonDecode(res.body);
+      debugPrint('📥 checkAndLoad boundStudents: success=${data["success"]}, dataLen=${(data["data"] as List?)?.length ?? 0}');
+
       if (data["success"] == true) {
         setState(() {
           hasBoundStudents = (data["data"] as List).isNotEmpty;
         });
         if (!hasBoundStudents) {
+          debugPrint('⚠️ checkAndLoad: 无绑定学生');
           setState(() => loading = false);
         } else {
+          debugPrint('✅ checkAndLoad: 有绑定学生，调用 getPaperList');
           await getPaperList();
         }
       } else {
+        debugPrint('❌ checkAndLoad API error: ${data["msg"]}');
         setState(() => loading = false);
       }
     } catch (e) {
@@ -72,10 +80,12 @@ class _ExamPageState extends State<ExamPage> {
       final prefs = await SharedPreferences.getInstance();
       final userInfoStr = prefs.getString("userInfo");
       if (userInfoStr == null) {
+        debugPrint('❌ getPaperList: userInfo is null');
         setState(() => loading = false);
         return;
       }
       final parentAccount = jsonDecode(userInfoStr)["account"] ?? "";
+      debugPrint('📡 getPaperList: parentAccount=$parentAccount');
 
       final res = await http.post(
         Uri.parse("$baseUrl/api/exam"),
@@ -86,10 +96,14 @@ class _ExamPageState extends State<ExamPage> {
         }),
       );
 
+      debugPrint('📥 getPaperList response status: ${res.statusCode}');
       final data = jsonDecode(res.body);
+      debugPrint('📥 getPaperList response: success=${data["success"]}, keys=${data.keys.toList()}');
+
       setState(() {
         if (data["success"] == true) {
           final rawList = data["data"]?["userList"] ?? [];
+          debugPrint('📥 getPaperList userList length: ${rawList.length}');
           userList = List<Map<String, dynamic>>.from(rawList).map((user) {
             final remark = user["remark"] != null && (user["remark"] as String).isNotEmpty
                 ? user["remark"]
@@ -106,6 +120,7 @@ class _ExamPageState extends State<ExamPage> {
           userList = [];
           loadError = true;
           loadErrorMsg = data["msg"] ?? "加载失败";
+          debugPrint('❌ getPaperList API error: ${data["msg"]}');
         }
         loading = false;
       });
