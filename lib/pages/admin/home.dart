@@ -6,6 +6,7 @@ import 'notice.dart';
 import 'mine.dart';
 import 'package:zdxtapp/pages/public/aichat.dart';
 import 'package:zdxtapp/widgets/nav_background.dart';
+import 'package:zdxtapp/widgets/liquid_glass_slider.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -32,6 +33,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void switchTab(int index) {
@@ -89,35 +96,47 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               ),
             ),
 
-            // 悬浮底部导航栏（固定不动） - 玻璃折射效果
+            // 悬浮底部导航栏 — 双层玻璃结构：
+            // ① 外层：磨砂液态玻璃长圆卡片（BackdropFilter 模糊 + 半透明渐变，稳定可见）
+            // ② 内层：简约玻璃指示器（透明底 + 柔和高光 + 边缘描边）
             Positioned(
               left: 16,
               right: 16,
               bottom: MediaQuery.of(context).padding.bottom + 4,
               child: Center(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(22),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                     child: Container(
                       height: 52,
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.22),
+                            Colors.white.withValues(alpha: 0.10),
+                          ],
+                          stops: const [0.0, 1.0],
+                        ),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.28),
+                          width: 1.0,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          final screenWidth = MediaQuery.of(context).size.width;
-                          final sliderWidth = screenWidth * 0.15;
+                          final sliderWidth = constraints.maxWidth * 0.15;
                           final tabWidth = (constraints.maxWidth - 52) / 4;
                           final positions = [
                             tabWidth * 0.5 - sliderWidth * 0.5,
@@ -128,30 +147,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           return Stack(
                             children: [
                               AnimatedPositioned(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeOut,
+                                duration: const Duration(milliseconds: 350),
+                                curve: Curves.easeOutCubic,
                                 left: positions[currentIndex].clamp(0.0, constraints.maxWidth - sliderWidth),
                                 top: 4,
-                                child: Container(
+                                child: LiquidGlassSlider(
                                   width: sliderWidth,
                                   height: 44,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.24),
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(color: Colors.white.withValues(alpha: 0.30)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.white.withValues(alpha: 0.14),
-                                        blurRadius: 14,
-                                        spreadRadius: 1.5,
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.06),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
+                                  cornerRadius: 8,
                                 ),
                               ),
                               Row(
@@ -199,7 +202,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   ),
                 ),
               ),
-            ),
+              ),
           ],
         ),
       ),
