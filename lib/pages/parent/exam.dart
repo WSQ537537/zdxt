@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zdxtapp/config.dart';
-import 'package:zdxtapp/utils/formula_renderer.dart'; // 🔥 新公式渲染器
-import 'package:zdxtapp/utils/ui_helpers.dart'; // 🔥 全局UI辅助工具
+import 'package:zdxtapp/utils/formula_renderer.dart';
+import 'package:zdxtapp/utils/ui_helpers.dart';
 
 class ExamPage extends StatefulWidget {
   const ExamPage({super.key});
@@ -15,9 +15,12 @@ class ExamPage extends StatefulWidget {
 
 class _ExamPageState extends State<ExamPage> {
   bool loading = true;
+  bool loadError = false;
+  String loadErrorMsg = "";
   List<Map<String, dynamic>> userList = [];
   bool hasBoundStudents = false;
   final String baseUrl = Config.baseUrl;
+  int _selectedUserIndex = 0;
 
   @override
   void initState() {
@@ -26,132 +29,102 @@ class _ExamPageState extends State<ExamPage> {
   }
 
   Future<void> checkAndLoad() async {
-    setState(() => loading = true);
-    final prefs = await SharedPreferences.getInstance();
-    final userInfo = prefs.getString("userInfo");
-    if (userInfo == null) {
-      setState(() => loading = false);
-      return;
-    }
-    final parentAccount = jsonDecode(userInfo)["account"] ?? "";
+    try {
+      setState(() => loading = true);
+      final prefs = await SharedPreferences.getInstance();
+      final userInfo = prefs.getString("userInfo");
+      if (userInfo == null) {
+        setState(() => loading = false);
+        return;
+      }
+      final parentAccount = jsonDecode(userInfo)["account"] ?? "";
 
-    final res = await http.post(
-      Uri.parse("$baseUrl/api/user"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "action": "getParentBoundStudents",
-        "parentAccount": parentAccount
-      }),
-    );
+      final res = await http.post(
+        Uri.parse("$baseUrl/api/user"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "action": "getParentBoundStudents",
+          "parentAccount": parentAccount
+        }),
+      );
 
-    final data = jsonDecode(res.body);
-    if (data["success"] == true) {
-      setState(() {
-        hasBoundStudents = (data["data"] as List).isNotEmpty;
-      });
-      if (hasBoundStudents) {
-        getPaperList();
+      final data = jsonDecode(res.body);
+      if (data["success"] == true) {
+        setState(() {
+          hasBoundStudents = (data["data"] as List).isNotEmpty;
+        });
+        if (!hasBoundStudents) {
+          setState(() => loading = false);
+        } else {
+          await getPaperList();
+        }
       } else {
         setState(() => loading = false);
       }
+    } catch (e) {
+      debugPrint('❌ checkAndLoad 异常: $e');
+      setState(() => loading = false);
     }
   }
 
   Future<void> getPaperList() async {
-    final prefs = await SharedPreferences.getInstance();
-    final parentAccount = jsonDecode(prefs.getString("userInfo")!)["account"] ?? "";
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userInfoStr = prefs.getString("userInfo");
+      if (userInfoStr == null) {
+        setState(() => loading = false);
+        return;
+      }
+      final parentAccount = jsonDecode(userInfoStr)["account"] ?? "";
 
-    final res = await http.post(
-      Uri.parse("$baseUrl/api/exam"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "action": "getParentExamStatistics",
-        "parentAccount": parentAccount
-      }),
-    );
+      final res = await http.post(
+        Uri.parse("$baseUrl/api/exam"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "action": "getParentExamStatistics",
+          "parentAccount": parentAccount
+        }),
+      );
 
-    final data = jsonDecode(res.body);
-    if (data["success"] == true) {
+      final data = jsonDecode(res.body);
       setState(() {
-        userList = List<Map<String, dynamic>>.from(data["data"]["userList"] ?? []).map((user) {
-          final remark = (user["examList"] != null && user["examList"].isNotEmpty)
-              ? user["examList"][0]["remark"] ?? "无"
-              : "无";
-
-          return {
-            ...user,
-            "remark": remark,
-            "expand": false,
-            "examList": List<Map<String, dynamic>>.from(user["examList"] ?? []).map((e) {
-              return {
-                ...e,
-                "expand": false,
-                "singleList": e["singleList"] ?? [],
-                "multiList": e["multiList"] ?? [],
-                "fillList": e["fillList"] ?? [],
-                "shortList": e["shortList"] ?? [],
-              };
-            }).toList(),
-          };
-        }).toList();
+        if (data["success"] == true) {
+          final rawList = data["data"]?["userList"] ?? [];
+          userList = List<Map<String, dynamic>>.from(rawList).map((user) {
+            final remark = user["remark"] != null && (user["remark"] as String).isNotEmpty
+                ? user["remark"]
+                : "无";
+            return {
+              ...user,
+              "remark": remark,
+              "examList": List<Map<String, dynamic>>.from(user["examList"] ?? []),
+            };
+          }).toList();
+          _selectedUserIndex = 0;
+          loadError = false;
+        } else {
+          userList = [];
+          loadError = true;
+          loadErrorMsg = data["msg"] ?? "加载失败";
+        }
         loading = false;
       });
+    } catch (e) {
+      debugPrint('❌ getPaperList 异常: $e');
+      setState(() {
+        loading = false;
+        loadError = true;
+        loadErrorMsg = e.toString();
+      });
     }
-  }
-
-  void toggleUser(int i) {
-    // 🔥 修复：创建新的列表副本，确保 Flutter 检测到变化
-    setState(() {
-      final newList = List<Map<String, dynamic>>.from(userList.map((user) => Map<String, dynamic>.from(user)));
-      
-      // 先收起所有用户
-      for (int j = 0; j < newList.length; j++) {
-        if (j != i) {
-          newList[j]["expand"] = false;
-        }
-      }
-      
-      // 切换当前用户的展开状态
-      newList[i]["expand"] = !newList[i]["expand"];
-      
-      userList = newList;
-    });
-  }
-
-  void toggleExam(int u, int e) {
-    // 🔥 修复：创建新的列表和嵌套列表副本，确保 Flutter 检测到变化
-    setState(() {
-      final newList = List<Map<String, dynamic>>.from(userList.map((user) {
-        final newUser = Map<String, dynamic>.from(user);
-        if (user["examList"] is List) {
-          newUser["examList"] = List<Map<String, dynamic>>.from(
-            (user["examList"] as List).map((exam) => Map<String, dynamic>.from(exam))
-          );
-        }
-        return newUser;
-      }));
-      
-      final exams = newList[u]["examList"] as List<Map<String, dynamic>>;
-      
-      // 先收起该用户下的所有试卷
-      for (int j = 0; j < exams.length; j++) {
-        if (j != e) {
-          exams[j]["expand"] = false;
-        }
-      }
-      
-      // 切换当前试卷的展开状态
-      exams[e]["expand"] = !exams[e]["expand"];
-      
-      userList = newList;
-    });
   }
 
   String fmtTime(String? t) {
     if (t == null || t.isEmpty) return "未知时间";
     try {
-      final d = DateTime.parse(t);
-      return "${d.year}-${d.month.toString().padLeft(2,'0')}-${d.day.toString().padLeft(2,'0')} ${d.hour.toString().padLeft(2,'0')}:${d.minute.toString().padLeft(2,'0')}";
+      final parsed = DateTime.parse(t);
+      final cst = parsed.isUtc ? parsed.add(const Duration(hours: 8)) : parsed;
+      return "${cst.year}-${cst.month.toString().padLeft(2,'0')}-${cst.day.toString().padLeft(2,'0')} ${cst.hour.toString().padLeft(2,'0')}:${cst.minute.toString().padLeft(2,'0')}";
     } catch (_) {
       return t;
     }
@@ -171,135 +144,264 @@ class _ExamPageState extends State<ExamPage> {
     return arr.map((a) => getAnswerLetter(q, a)).join("、");
   }
 
+  void _showExamDetail(int examIndex) {
+    final exam = userList[_selectedUserIndex]["examList"][examIndex];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      exam["examName"] ?? "试卷详情",
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0F7FF),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        "提交时间：${fmtTime(exam["submitTime"])}    得分：${exam["totalScore"] ?? 0}",
+                        style: const TextStyle(color: Colors.black54, fontSize: 13),
+                      ),
+                    ),
+                    if (exam["singleList"].isNotEmpty)
+                      buildQuestionSection("单选题", exam["singleList"], true),
+                    if (exam["multiList"].isNotEmpty)
+                      buildQuestionSection("多选题", exam["multiList"], false),
+                    if (exam["fillList"].isNotEmpty)
+                      buildQuestionSection("填空题", exam["fillList"], null),
+                    if (exam["shortList"].isNotEmpty)
+                      buildQuestionSection("简答题", exam["shortList"], null),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: loading
           ? const Center(child: CircularProgressIndicator(color: Colors.white))
-          : !hasBoundStudents
-              ? const Center(child: Text("暂无绑定学生，请前往我的-设置页面绑定", style: TextStyle(color: Color.fromARGB(179, 0, 0, 0))))
-              : userList.isEmpty
-                  ? const Center(child: Text("暂无答题记录", style: TextStyle(color: Color.fromARGB(179, 0, 68, 255))))
-                  : ListView(
-                      padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 20),
-                      children: [
-                        for (int i = 0; i < userList.length; i++) buildUserCard(i),
-                      ],
-                    ),
+          : loadError
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                      const SizedBox(height: 12),
+                      Text(loadErrorMsg, style: const TextStyle(color: Colors.black54, fontSize: 14)),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: getPaperList,
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: const Text("重新加载"),
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1890FF)),
+                      ),
+                    ],
+                  ),
+                )
+              : !hasBoundStudents
+                  ? const Center(child: Text("暂无绑定学生，请前往我的-设置页面绑定", style: TextStyle(color: Color.fromARGB(179, 0, 0, 0))))
+                  : userList.isEmpty
+                      ? const Center(child: Text("暂无答题记录", style: TextStyle(color: Color.fromARGB(179, 0, 68, 255))))
+                      : RefreshIndicator(
+                          onRefresh: () async => getPaperList(),
+                          color: Colors.blue,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: _buildBigCard(context),
+                          ),
+                        ),
     );
   }
 
-  Widget buildUserCard(int i) {
-    final user = userList[i];
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+  Widget _buildBigCard(BuildContext context) {
+    const cardTop = 40.0;
+    const bottomPadding = 56.0;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: cardTop,
+        bottom: bottomPadding,
       ),
-      child: Column(
-        children: [
-          ListTile(
-            onTap: () => toggleUser(i),
-            title: Text("账号：${user["account"]}", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-            subtitle: Text("备注：${user["remark"]}", style: const TextStyle(color: Colors.black54)),
-            trailing: Icon(user["expand"] ? Icons.expand_more : Icons.chevron_right, color: Colors.black54),
-          ),
-          if (user["expand"])
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            _buildStudentSelector(),
+            const Divider(height: 1, color: Color(0xFFE0E0E0)),
+            Expanded(child: _buildExamList()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStudentSelector() {
+    return Container(
+      height: 56,
+      color: const Color(0xFFFAFAFA),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        itemCount: userList.length,
+        itemBuilder: (ctx, i) {
+          final user = userList[i];
+          final isSelected = i == _selectedUserIndex;
+          return GestureDetector(
+            onTap: () => setState(() => _selectedUserIndex = i),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF1890FF) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF1890FF) : Colors.grey.shade300,
+                ),
+                boxShadow: isSelected
+                    ? [BoxShadow(color: const Color(0xFF1890FF).withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 1))]
+                    : null,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (user["examList"].isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text("该学生暂无答题记录", style: TextStyle(color: Colors.black54)),
+                  Text(
+                    user["account"] ?? "",
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black87,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                     ),
-                  for (int j = 0; j < user["examList"].length; j++)
-                    buildExamItem(i, j),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    "(${user["remark"]})",
+                    style: TextStyle(
+                      color: isSelected ? Colors.white70 : Colors.black54,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget buildExamItem(int u, int e) {
-    final exam = userList[u]["examList"][e];
-    return Column(
-      children: [
-        Container(
-          margin: const EdgeInsets.only(bottom: 8),
+  Widget _buildExamList() {
+    final user = userList[_selectedUserIndex];
+    final examList = List<dynamic>.from(user["examList"] ?? []);
+
+    if (examList.isEmpty) {
+      return const Center(child: Text("该学生暂无答题记录", style: TextStyle(color: Colors.black54)));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: examList.length,
+      itemBuilder: (ctx, i) {
+        final exam = examList[i];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
           child: ListTile(
-            onTap: () => toggleExam(u, e),
-            title: Text(exam["examName"] ?? "试卷", style: const TextStyle(color: Colors.black87)),
-            subtitle: Text("提交：${fmtTime(exam["submitTime"])} | 得分：${exam["totalScore"] ?? 0}", style: const TextStyle(color: Colors.black54)),
-            trailing: Icon(exam["expand"] ? Icons.expand_more : Icons.chevron_right, color: Colors.black54),
-          ),
-        ),
-        if (exam["expand"])
-          Container(
-            height: 400, // 🔥 修复：设置固定高度容器
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            title: Text(
+              exam["examName"] ?? "试卷",
+              style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500),
             ),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(), // 🔥 确保可以滚动
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 🔥 直接展示题目，不再重复显示试卷名称、提交时间、得分
-
-                  // 单选题
-                  if (exam["singleList"].isNotEmpty)
-                    buildQuestionSection("📝 单选题", exam["singleList"], true),
-
-                  // 多选题
-                  if (exam["multiList"].isNotEmpty)
-                    buildQuestionSection("📌 多选题", exam["multiList"], false),
-
-                  // 填空题
-                  if (exam["fillList"].isNotEmpty)
-                    buildQuestionSection("✍️ 填空题", exam["fillList"], null),
-
-                  // 简答题
-                  if (exam["shortList"].isNotEmpty)
-                    buildQuestionSection("📖 简答题", exam["shortList"], null),
-                ],
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                "提交：${fmtTime(exam["submitTime"])}  |  得分：${exam["totalScore"] ?? 0}",
+                style: const TextStyle(color: Colors.black54, fontSize: 13),
               ),
             ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1890FF).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Text(
+                "查看",
+                style: TextStyle(color: Color(0xFF1890FF), fontSize: 13, fontWeight: FontWeight.w500),
+              ),
+            ),
+            onTap: () => _showExamDetail(i),
           ),
-      ],
+        );
+      },
     );
   }
 
@@ -310,20 +412,13 @@ class _ExamPageState extends State<ExamPage> {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Text(title, style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500)),
         ),
-        const SizedBox(height: 8),
         for (int i = 0; i < list.length; i++)
           buildQuestion(list[i], i + 1, isSingle),
         const SizedBox(height: 16),
@@ -334,18 +429,12 @@ class _ExamPageState extends State<ExamPage> {
   Widget buildQuestion(Map q, int num, bool? isSingle) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(10),
-      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: const Color(0xFFFAFAFA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,18 +442,15 @@ class _ExamPageState extends State<ExamPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("第$num 题", style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+              Text("第 $num 题", style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
               Text("得分：${q["userScore"] ?? 0}/${q["score"] ?? 0}", style: TextStyle(color: UIHelpers.warningColor)),
             ],
           ),
-          const SizedBox(height: 6),
-          // ✅ 题目内容支持数学公式（直接使用原始文本）
+          const SizedBox(height: 8),
           LayoutBuilder(
             builder: (context, constraints) {
               return ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: constraints.maxWidth,
-                ),
+                constraints: BoxConstraints(maxWidth: constraints.maxWidth),
                 child: FormulaRenderer.renderMixedText(
                   q["title"] ?? "无题目",
                   style: const TextStyle(color: Colors.black87, fontSize: 14, height: 1.5),
@@ -373,22 +459,17 @@ class _ExamPageState extends State<ExamPage> {
             },
           ),
           const SizedBox(height: 8),
-
           if (isSingle != null && q["options"] != null)
             for (int j = 0; j < q["options"].length; j++)
               buildOption(q["options"][j], j, q, isSingle),
-
           const SizedBox(height: 6),
           Text("我的答案：${isSingle == true ? getAnswerLetter(q, q["userAnswer"]) : (isSingle == false ? getMultiAnswerLetter(q, q["userAnswer"]) : q["userAnswer"] ?? "未作答")}", style: const TextStyle(color: Colors.black54)),
           Text("标准答案：${isSingle == true ? getAnswerLetter(q, q["standardAnswer"]) : (isSingle == false ? getMultiAnswerLetter(q, q["standardAnswer"]) : q["standardAnswer"] ?? "无")}", style: TextStyle(color: UIHelpers.successColor)),
           const SizedBox(height: 6),
-          // ✅ 解析内容支持数学公式（直接使用原始文本）
           LayoutBuilder(
             builder: (context, constraints) {
               return ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: constraints.maxWidth,
-                ),
+                constraints: BoxConstraints(maxWidth: constraints.maxWidth),
                 child: FormulaRenderer.renderMixedText(
                   "解析：${q["analysis"] ?? "暂无解析"}",
                   style: const TextStyle(color: Colors.grey, fontSize: 13, height: 1.5),
@@ -415,32 +496,29 @@ class _ExamPageState extends State<ExamPage> {
     }
 
     Color bg = Colors.transparent;
-    if (isUser) bg = UIHelpers.warningColor.withValues(alpha: 0.2);
-    if (isStd) bg = UIHelpers.successColor.withValues(alpha: 0.2);
-    if (isUser && isStd) bg = const Color(0xFF20C997).withValues(alpha: 0.2);
+    if (isUser) bg = UIHelpers.warningColor.withValues(alpha: 0.15);
+    if (isStd) bg = UIHelpers.successColor.withValues(alpha: 0.15);
+    if (isUser && isStd) bg = const Color(0xFF20C997).withValues(alpha: 0.15);
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: bg,
-        border: Border.all(color: Colors.white30),
-        borderRadius: BorderRadius.circular(UIHelpers.radiusSmall),
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("$letter. ", style: const TextStyle(color: Colors.black87)),
-          // 🔥 核心修复：使用 Flexible + LayoutBuilder + ConstrainedBox 确保正确换行
+          Text("$letter. ", style: const TextStyle(color: Colors.black87, fontSize: 13)),
           Flexible(
             fit: FlexFit.loose,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 return ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: constraints.maxWidth,
-                  ),
+                  constraints: BoxConstraints(maxWidth: constraints.maxWidth),
                   child: FormulaRenderer.renderMixedText(
                     opt,
                     style: const TextStyle(color: Colors.black87, fontSize: 13),
